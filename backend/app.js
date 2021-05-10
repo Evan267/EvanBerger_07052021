@@ -4,6 +4,7 @@ const path = require('path');
 const helmet = require('helmet');
 const dotenv = require('dotenv');
 dotenv.config();
+const { Sequelize } = require('sequelize');
 
 const app = express();
 
