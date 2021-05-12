@@ -1,3 +1,5 @@
+const { DataTypes } = require("sequelize");
+
 module.exports  = (sequelize, Sequelize) => {
     const Comment = sequelize.define("comment", {
         text: {
@@ -7,7 +9,7 @@ module.exports  = (sequelize, Sequelize) => {
             type: DataTypes.STRING(150)
         },
         upperCommentId: {
-            type: DataTypes.INT.UNSIGNED
+            type: DataTypes.INTEGER
         }
     });
     return Comment;

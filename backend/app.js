@@ -26,11 +26,11 @@ db.sequelize.sync({ force: true })
         console.log('Drop and re-sync db.');
     });
 
-/*const userRoute = require('./routes/auth');
+const userRoute = require('./routes/auth');
 app.use('/api/auth', userRoute);
 
 const publicationRoute = require('./routes/publications');
-app.use('/api/publications', publicationRoute);*/
+app.use('/api/publications', publicationRoute);
 
 
 

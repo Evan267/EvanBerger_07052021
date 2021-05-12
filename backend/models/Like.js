@@ -1,18 +1,12 @@
+const { DataTypes } = require("sequelize");
+
 module.exports = (sequelize, Sequelize) => {
     const Like = sequelize.define('like', {
         usersLiked: {
-            type: DataTypes.SMALLINT.UNSIGNED,
-            references: {
-                model: User,
-                key: 'id'
-            }
+            type: DataTypes.SMALLINT,
         },
         usersDisliked: {
-            type: DataTypes.SMALLINT.UNSIGNED,
-            references: {
-                model: User,
-                key: 'id'
-            }
+            type: DataTypes.SMALLINT,
         }
     });
     return Like;

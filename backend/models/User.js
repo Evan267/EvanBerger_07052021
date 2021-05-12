@@ -1,3 +1,5 @@
+const { DataTypes } = require("sequelize");
+
 module.exports = (sequelize, Sequelize) => {
     const User = sequelize.define('user', {
         email: {
@@ -22,7 +24,7 @@ module.exports = (sequelize, Sequelize) => {
         },
         image: {
             type: DataTypes.STRING(150),
-            defaultValue: "https://localhost:3000/images/default.jpg"
+            defaultValue: "https://localhost:3000/images/users/default.jpg"
         }
     });
     return User;
