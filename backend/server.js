@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
+const http = require('http');
 const app = require('./app');
 
 /*const key = fs.readFileSync(path.join(__dirname, 'certificate', 'server.key'));
@@ -43,7 +43,7 @@ const errorHandler = error => {
   }
 };
 
-const server = https.createServer(/*option,*/ app);
+const server = http.createServer(/*option,*/ app);
 
 server.on('error', errorHandler);
 server.on('listening', () => {

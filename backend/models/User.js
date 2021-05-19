@@ -20,11 +20,11 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false
         },
         birthdate: {
-            type: DataTypes.DATE
+            type: DataTypes.DATEONLY
         },
         image: {
             type: DataTypes.STRING(150),
-            defaultValue: "https://localhost:3000/images/users/default.jpg"
+            defaultValue: "http://localhost:3000/images/users/default.jpg"
         }
     });
     return User;

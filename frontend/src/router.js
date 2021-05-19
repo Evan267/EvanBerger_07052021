@@ -25,7 +25,7 @@ export default new Router({
     {
         path: "/publication/:id",
         name: "publication-details",
-        component: () => import("./components/PublicationsList")
+        component: () => import("./components/Publication")
     },
     {
         path: "/user/:id",

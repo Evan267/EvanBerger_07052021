@@ -5,9 +5,6 @@ module.exports  = (sequelize, Sequelize) => {
         text: {
             type: DataTypes.TEXT
         },
-        image: {
-            type: DataTypes.STRING(150)
-        },
         upperCommentId: {
             type: DataTypes.INTEGER
         }

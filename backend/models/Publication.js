@@ -5,10 +5,10 @@ module.exports = (sequelize, Sequelize) => {
         description: {
             type: DataTypes.TEXT,
         },
-        image: {
+        url: {
             type: DataTypes.STRING(150),
             allowNull: false
-        },
+        }
     });
     return Publication;
 }

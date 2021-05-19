@@ -9,11 +9,13 @@ const logInLimiter = rateLimit({
 })
 
 const checkPassword = require('../middleware/checkPassword');
+const multer = require('../middleware/multer-config-user');
 
 const authCtrl = require('../controllers/auth');
 
-router.post('/signup', checkPassword, authCtrl.signUp);
+router.post('/signup', multer, checkPassword, authCtrl.signUp);
 router.post('/login', logInLimiter, authCtrl.logIn);
-router.delete('/id', authCtrl.deleteUser);
+router.get('/:id', authCtrl.getUser);
+router.delete('/:id', authCtrl.deleteUser);
 
 module.exports = router;
