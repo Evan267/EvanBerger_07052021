@@ -26,7 +26,7 @@ exports.signUp  = (req, res, next) => {
                     firstname: userObject.firstname,
                     lastname: userObject.lastname,
                     birthdate: userObject.birthdate,
-                    imageUrl: `${req.protocol}://${req.get('host')}/images/users/${req.file.filename}`,
+                    image: `${req.protocol}://${req.get('host')}/images/users/${req.file.filename}`,
                 }
             }
             User.create(user)

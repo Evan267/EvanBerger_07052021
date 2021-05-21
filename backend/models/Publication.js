@@ -2,10 +2,10 @@ const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize, Sequelize) => {
     const Publication = sequelize.define('publication', {        
-        description: {
+        text: {
             type: DataTypes.TEXT,
         },
-        url: {
+        image: {
             type: DataTypes.STRING(150),
             allowNull: false
         }

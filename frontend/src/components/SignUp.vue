@@ -119,7 +119,7 @@ export default {
           localStorage.setItem('token', data.token);
           localStorage.setItem('userId', data.userId);
           console.log(localStorage);
-          if(localStorage.token == !undefined){
+          if(localStorage.token !== "undefined"){
               this.$router.push({name: "publications"})
           }
       }

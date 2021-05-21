@@ -35,7 +35,7 @@ db.publications.belongsTo(db.users, {
 db.users.hasMany(db.comments, { as: "commentsUser"});
 db.comments.belongsTo(db.users, {
     foreignKey: "userId",
-    as: "user"
+    as: "userComment"
 });
 
 //Association un-à-plusieurs entre Publication et Comment
@@ -49,7 +49,7 @@ db.comments.belongsTo(db.publications, {
 db.publications.hasMany(db.likes, { as: "likes"});
 db.likes.belongsTo(db.publications, {
     foreignKey: "publicationId",
-    as: "publication"
+    as: "publicationLike"
 });
 
 
