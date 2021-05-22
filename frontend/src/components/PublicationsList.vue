@@ -1,6 +1,6 @@
 <template>
-  <div class="mainPage">
-      <p class="mainPage__messageCreate">{{ dataCreate.message }}</p>
+    <div>
+      <p class="createPublication__messageCreate">{{ dataCreate.message }}</p>
       <form @submit.prevent="createPublication" class="createPublication">
         <h1 class="createPublication__header">Nouvel publication</h1>
         <div>
@@ -16,9 +16,9 @@
         <div>
             <button type="submit" class="createPublication__submit">Publier</button>
         </div>
-    </form>
+      </form>
 
-    <div id="publications">
+      <div id="publications">
         <ul>
             <li v-for="item in dataGet.publication" v-bind:key="item.id" class="publication">
                 <div class="publication__user">
@@ -31,7 +31,7 @@
                 <p class="publication__text">{{ item.text }} </p>
                 <img :src="item.image" class="publication__img">
                 <div class="publication__commentsAndLikes">
-                    <router-link :to="`/publication/${item.id}`"  class="publication__commentsAndLikes__comments"> {{ item.comments.length }} commentaires </router-link>
+                    <router-link :to="{name: 'publication-details', params: { id: item.id }}"  class="publication__commentsAndLikes__comments"> {{ item.comments.length }} commentaires </router-link>
                     <div>
                         <button class="publication__commentsAndLikes__like"><i class="fas fa-thumbs-up"></i></button>
                         <button class="publication__commentsAndLikes__dislike"><i class="fas fa-thumbs-down"></i></button>
@@ -41,11 +41,13 @@
         </ul>
 
         {{ dataGet.publication }}
+      </div>
     </div>
-  </div>
 </template>
 
 <script>
+
+
 export default {
   name: 'PublicationsList',
   data() {
@@ -121,27 +123,28 @@ li{list-style: none;}
 
 p{margin: 0;}
 
-.mainPage{
-    &__messageCreate{
-        font-size:1.2em;
-        margin: 1vw 38vw;
-    }
+.publication{
+    box-shadow: none;
 }
 
 .createPublication{
     overflow: hidden;
     border-radius: 0.5vw;
     box-shadow: 0px 0px 8px grey;
-    width: 50%;
-    margin:3vw auto;
+    width: 100%;
+    margin-bottom:3vw;
     &__header{
-        margin-left:1vw;
+        margin:1vw 1vw 0;
+    }
+     &__messageCreate{
+        font-size: 1.2em;
+        margin: 1vw 0;
     }
     &__txt{
         width: 90%;
         border:none;
         margin: 1vw 2vw;
-        height:4vw;
+        height:3vw;
         resize: none;
         outline: none;
         font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -160,8 +163,6 @@ p{margin: 0;}
             right: 0;
             opacity:0;
             position: absolute;
-            width: 15vw;
-            height: 15vw;
             width:100%;
             height:100%;
             cursor:pointer;
@@ -170,7 +171,7 @@ p{margin: 0;}
             background-position: center;
             background-size: cover;
             width:100%;
-            height:30vw;
+            height:16vw;
             border:none;
             color:#2C3F51;
             p{font-size: 1.5em;}
@@ -190,13 +191,17 @@ p{margin: 0;}
         box-shadow: 0px 0px 3px grey;
         background-color:#2C3F51;
         color:white;
+        cursor:pointer;
+    }
+    &__submit:hover{
+        box-shadow: 0px 0px 9px grey;
     }
 }
 
 
 #publications{
-    width: 50%;
-    margin:0 auto;
+    width: 100%;
+    margin:0;
     box-shadow: none;
 }
 

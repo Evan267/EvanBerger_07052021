@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <router-view><LogIn msg="Welcome to Groupomania social Network"/></router-view>
+    <router-view><LogIn/></router-view>
   </div>
 </template>
 

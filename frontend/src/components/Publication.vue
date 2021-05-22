@@ -1,50 +1,54 @@
 <template>
-  <div class="publicationView">
-    <div class="publication">
-        <div class="publication__user">
-            <img :src="dataGet.publication.user.image" alt="">
-            <div>
-                <p class="publication__user__fullname">{{ fullname }}</p>
-                <p class="publication__user__date">{{ dataGet.publication.createdAt }}</p>
-            </div>
-        </div>
-        
-        <p class="publication__text">{{ dataGet.publication.text }} </p>
-        <img :src="dataGet.publication.image" class="publication__img">
-        <div class="publication__commentsAndLikes">
-            <p class="publication__commentsAndLikes__comments"> {{ commentGet.comments.length }} commentaire</p>
-            <div v-if="userLiked">
-                <button class="publication__commentsAndLikes__like" @click.prevent="Like" style="color: green"><i class="fas fa-thumbs-up"></i></button>
-                <button class="publication__commentsAndLikes__dislike" disabled><i class="fas fa-thumbs-down"></i></button>
-            </div>
-            <div v-else-if="userDisliked">
-                <button class="publication__commentsAndLikes__like" disabled><i class="fas fa-thumbs-up"></i></button>
-                <button class="publication__commentsAndLikes__dislike" @click.prevent="Dislike" style="color: red"><i class="fas fa-thumbs-down"></i></button>
-            </div>
-            <div v-else>
-                <button class="publication__commentsAndLikes__like" @click.prevent="Like">{{ this.countLikes }}<i class="fas fa-thumbs-up"></i></button>
-                <button class="publication__commentsAndLikes__dislike" @click.prevent="Dislike">{{ this.countDislikes }}<i class="fas fa-thumbs-down"></i></button>
-            </div>
-        </div>
-    </div>
-    <form @submit.prevent="createComment" class="publication__commentForm" id="form">
-        <input type="text" class="publication__commentForm__input" name="text" v-model="commentCreate.text" placeholder="Commentaire">
-        <button type="submit" class="publication__commentForm__submit"><i class="fas fa-paper-plane"></i></button>
-    </form>
+  <div class="publicationPage">
     <div>
-        <ul>
-            <li class="publication__comments" v-for="item in commentGet.comments" v-bind:key="item.id">
-                <img :src="item.userComment.image" class="publication__comments__userImage">
-                <div>
-                    <p><span class="publication__comments__userFullname">{{ item.userComment.firstname }} {{ item.userComment.lastname }}</span> {{ item.text }} </p>
-                    <p class="publication__comments__createdDate">{{ item.createdAt }}</p>
-                </div>
-                <button class="publication__comments__delete" v-if="item.userId == userId" v-on:click="deleteComment(item.id)"><i class="fas fa-times"></i></button>
-            </li>
-        </ul>
+        <router-link :to="{name: 'homePage'}" class="publicationPage__previous"><i class="fas fa-arrow-left"></i></router-link>
     </div>
-  </div>
-  
+    <div class="publicationView">
+        <div class="publication">
+            <div class="publication__user">
+                <img :src="dataGet.publication.user.image" alt="">
+                <div>
+                    <p class="publication__user__fullname">{{ fullname }}</p>
+                    <p class="publication__user__date">{{ dataGet.publication.createdAt }}</p>
+                </div>
+            </div>
+            
+            <p class="publication__text">{{ dataGet.publication.text }} </p>
+            <img :src="dataGet.publication.image" class="publication__img">
+            <div class="publication__commentsAndLikes">
+                <p class="publication__commentsAndLikes__comments"> {{ commentGet.comments.length }} commentaire</p>
+                <div v-if="userLiked">
+                    <button class="publication__commentsAndLikes__like" @click.prevent="Like" style="color: green"><i class="fas fa-thumbs-up"></i></button>
+                    <button class="publication__commentsAndLikes__dislike" disabled><i class="fas fa-thumbs-down"></i></button>
+                </div>
+                <div v-else-if="userDisliked">
+                    <button class="publication__commentsAndLikes__like" disabled><i class="fas fa-thumbs-up"></i></button>
+                    <button class="publication__commentsAndLikes__dislike" @click.prevent="Dislike" style="color: red"><i class="fas fa-thumbs-down"></i></button>
+                </div>
+                <div v-else>
+                    <button class="publication__commentsAndLikes__like" @click.prevent="Like">{{ this.countLikes }}<i class="fas fa-thumbs-up"></i></button>
+                    <button class="publication__commentsAndLikes__dislike" @click.prevent="Dislike">{{ this.countDislikes }}<i class="fas fa-thumbs-down"></i></button>
+                </div>
+            </div>
+        </div>
+        <form @submit.prevent="createComment" class="publication__commentForm" id="form">
+            <input type="text" class="publication__commentForm__input" name="text" v-model="commentCreate.text" placeholder="Commentaire">
+            <button type="submit" class="publication__commentForm__submit"><i class="fas fa-paper-plane"></i></button>
+        </form>
+        <div>
+            <ul>
+                <li class="publication__comments" v-for="item in commentGet.comments" v-bind:key="item.id">
+                    <img :src="item.userComment.image" class="publication__comments__userImage">
+                    <div>
+                        <p><span class="publication__comments__userFullname">{{ item.userComment.firstname }} {{ item.userComment.lastname }}</span> {{ item.text }} </p>
+                        <p class="publication__comments__createdDate">{{ item.createdAt }}</p>
+                    </div>
+                    <button class="publication__comments__delete" v-if="item.userId == userId" v-on:click="deleteComment(item.id)"><i class="fas fa-times"></i></button>
+                </li>
+            </ul>
+        </div>
+    </div>
+  </div>  
 </template>
 
 <script>
@@ -136,7 +140,7 @@ export default {
                   countLikes += 1;
               } else if (this.dataGet.publication.likes[i].usersDisliked !== null){
                   countDislikes += 1;
-              };
+              }
               if(this.dataGet.publication.likes[i].usersLiked == this.userId){
                   this.userLiked = true;
                   this.userDisliked = false;
@@ -223,8 +227,22 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.publicationPage{
+    display: grid;
+    grid-template-columns: 24vw 50vw 24vw;
+    grid-gap: 1vw;
+    margin-top: 3vw;
+    &__previous{
+        margin-left: 2vw;
+        font-size:1.5em;
+        color:#2C3F51;
+    }
+}
+
+
+
 .publicationView{
-    width:50%;
+    width:100%;
     margin: 0 auto;
     box-shadow: 0px 0px 8px grey;
     border-radius: 0.5vw;
@@ -277,6 +295,7 @@ export default {
         button{
             border:none;
             background-color:transparent;
+            color: #2C3F51;
         }
         &__comments{
             width:50%;
@@ -296,7 +315,7 @@ export default {
     }
     &__commentForm{
         margin: 1vw 2vw;
-        border:3px solid grey;
+        border:3px solid #2C3F51;
         border-radius: 4vw;
         overflow: hidden;
         padding-left:3%;
@@ -313,7 +332,8 @@ export default {
             width: 7vw;
             height: 5vw;
             border:none;
-            background-color: blue;
+            color: white;
+            background-color: #2C3F51;
             :hover{
                 box-shadow: 3px 3px 7px grey;
             }

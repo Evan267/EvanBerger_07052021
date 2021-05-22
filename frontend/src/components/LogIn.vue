@@ -48,7 +48,7 @@ export default {
           localStorage.setItem('userId', data.userId);
           console.log(localStorage);
           if(localStorage.token !== "undefined"){
-              this.$router.push({name: "publications"})
+              this.$router.push({name: "homePage"})
           }else{
               this.error = true;
           }

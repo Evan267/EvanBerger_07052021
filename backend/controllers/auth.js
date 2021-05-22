@@ -1,6 +1,7 @@
 const db = require('../models');
 const User = db.users;
 const Op = db.Sequelize.Op;
+const fs = require('fs');
 
 const bcrypt = require('bcrypt');
 const jwt =  require('jsonwebtoken');
@@ -74,7 +75,82 @@ exports.deleteUser = (req, res, next) => {
 }
 
 exports.getUser = (req,res, next) => {
-    return User.findOne({ where: { id: req.params.id }})
+    return User.findOne({attributes: ["birthdate", "email", "firstname", "lastname", "image"],where: { id: req.params.userId }})
         .then(user => res.status(200).json({user}))
         .catch(error => res.status(400).json({ error }));
+}
+
+exports.modifyUser = (req,res, next) => {
+    console.log(JSON.parse(req.body.user));
+    console.log(req.file);
+    const userObject = JSON.parse(req.body.user);
+    let user = {};
+    if (userObject.user.password === undefined){
+        if (req.file === undefined){
+            user = {
+                email: userObject.user.email,
+                firstname: userObject.user.firstname,
+                lastname: userObject.user.lastname,
+                birthdate: userObject.user.birthdate
+            };
+            console.log(user);
+            User.update(user, { where: { id: req.params.userId }})
+                .then(() => res.status(201).json({ message: "La publication a été modifiée"}))
+                .catch (error => res.status(400).json({error}));
+        } else  {
+            user = {
+                email: userObject.user.email,
+                firstname: userObject.user.firstname,
+                lastname: userObject.user.lastname,
+                birthdate: userObject.user.birthdate,
+                image: `${req.protocol}://${req.get('host')}/images/users/${req.file.filename}`,
+            }
+            console.log(user);
+            User.findOne({ where: { id: req.params.userId }})
+                .then(userFind => {
+                    const filename = userFind.image.split('/images/users/')[1];
+                    fs.unlink(`images/users/${filename}`, () => {
+                        User.update(user, { where: { id: req.params.userId }})
+                        .then(() => res.status(201).json({ message: "La publication a été modifiée"}))
+                        .catch (error => res.status(400).json({error}));
+                    })
+                });
+        }
+    }else{
+        bcrypt.hash(userObject.user.password, 10)
+            .then(hash => {
+                if (req.file === undefined){
+                    user = {
+                        email: userObject.user.email,
+                        password: hash,
+                        firstname: userObject.user.firstname,
+                        lastname: userObject.user.lastname,
+                        birthdate: userObject.user.birthdate
+                    }
+                    console.log(user);
+                    User.update(user, { where: { id: req.params.userId }})
+                        .then(() => res.status(201).json({ message: "La publication a été modifiée"}))
+                        .catch (error => res.status(400).json({error}));
+                } else  {
+                    user = {
+                        email: userObject.user.email,
+                        password: hash,
+                        firstname: userObject.user.firstname,
+                        lastname: userObject.user.lastname,
+                        birthdate: userObject.user.birthdate,
+                        image: `${req.protocol}://${req.get('host')}/images/users/${req.file.filename}`
+                    }
+                    console.log(user);
+                    User.findOne({ where: { id: req.params.userId }})
+                        .then(userFind => {
+                            const filename = userFind.image.split('/images/users/')[1];
+                            fs.unlink(`images/users/${filename}`, () => {
+                                User.update(user, { where: { id: req.params.userId }})
+                                .then(() => res.status(201).json({ message: "La publication a été modifiée"}))
+                                .catch (error => res.status(400).json({error}));
+                            })
+                        });
+                }
+            });
+        }
 }

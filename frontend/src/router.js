@@ -8,7 +8,28 @@ export default new Router({
   routes: [
     {
       path: "/",
-      alias: "/login",
+      name: "user",
+      component: () => import("./components/User"),
+      children: [
+        {
+          name: "homePage",
+          path: '',
+          component: () => import("./components/PublicationsList")
+        },
+        {
+          path: "/profil/:userId",
+          name: "user-profil",
+          component: () => import("./components/UserProfil"),
+        },
+        {
+          path: "/publication/:userId",
+          name: "user-publication",
+          component: () => import("./components/UserPublication"),
+        }
+      ]
+    },
+    {
+      path: "/login",
       name: "login",
       component: () => import("./components/LogIn")
     },
@@ -18,19 +39,9 @@ export default new Router({
       component: () => import("./components/SignUp")
     },
     {
-      path: "/publications",
-      name: "publications",
-      component: () => import("./components/PublicationsList")
-    },
-    {
         path: "/publication/:id",
         name: "publication-details",
         component: () => import("./components/Publication")
     },
-    {
-        path: "/user/:id",
-        name: "user-profil",
-        component: () => import("./components/UserProfil")
-    }
   ]
 });
