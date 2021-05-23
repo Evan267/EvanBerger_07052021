@@ -22,9 +22,9 @@ export default new Router({
           component: () => import("./components/UserProfil"),
         },
         {
-          path: "/publication/:userId",
-          name: "user-publication",
-          component: () => import("./components/UserPublication"),
+          path: "/userpublication/:userId",
+          name: "publications-by-user",
+          component: () => import("./components/PublicationsByUser"),
         }
       ]
     },

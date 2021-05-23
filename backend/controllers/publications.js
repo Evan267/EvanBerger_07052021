@@ -5,10 +5,12 @@ const User = db.users;
 const Publication = db.publications;
 const Comment = db.comments;
 const Like = db.likes;
+const fs = require('fs');
 
 exports.createPublication = (req, res, next) => {
+    console.log('réussi');
+    console.log(req.body.text);
     const publicationObject = JSON.parse(req.body.text);
-    console.log(publicationObject);
     let publication = {
         text: publicationObject,
         image: `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`,
@@ -59,7 +61,7 @@ exports.getAllPublications = (req,res,next) => {
 };
 
 exports.getAllPublicationsByUser = (req,res,next) => {
-    return Publication.findAll({ where: { userId: req.body.userId }, include: ["comments", "likes"]})
+    return Publication.findAll({ where: { userId: req.params.userGet }, include: ["comments", "likes","user"]})
         .then(publication => res.status(200).json({publication}))
         .catch(error => res.status(400).json({error}));
 };
@@ -71,12 +73,30 @@ exports.getAllCommentsByPublication = (req, res, next) =>  {
 }
 
 exports.modifyPublication = (req, res, next) => {
-    return Publication.update({
-        description: req.body.description,
-        image: `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`
-    }, { where: { id: req.body.publicationId }})
-        .then(() => res.status(201).json({ message: "La publication a été modifiée"}))
-        .catch (error => res.status(400).json({error}))
+    const publicationObject = JSON.parse(req.body.text);
+    let publication = {};
+    if(req.file === undefined){
+        publication = {
+            text: publicationObject
+        }
+        Publication.update(publication, { where: { id: req.params.publicationId }})
+            .then(() => res.status(201).json({ message: "La publication a été modifiée"}))
+            .catch (error => res.status(400).json({error}))
+    }else{
+        publication = {
+            text: publicationObject,
+            image: `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`
+        }
+        Publication.findOne({ where: { id: req.params.publicationId }})
+            .then(publicationFind =>{
+                const filename = publicationFind.image.split('/images/publications/')[1];
+                fs.unlink(`images/publications/${filename}`, () => {
+                    Publication.update(publication, { where: { id: req.params.publicationId }})
+                        .then(() => res.status(201).json({ message: "La publication a été modifiée"}))
+                        .catch (error => res.status(400).json({error}))
+                })
+            })
+    }
 }
 
 exports.modifyComment = (req, res, next) => {
@@ -89,11 +109,11 @@ exports.modifyComment = (req, res, next) => {
 }
 
 exports.deletePublication = (req, res, next) => {
-    return Publication.find({ where: { id: req.params.publicationId }})
+    return Publication.findOne({ where: { id: req.params.publicationId }})
         .then(publication => {
             const filename = publication.image.split('/images/publications/')[1];
             fs.unlink(`images/publications/${filename}`, () => {
-                Publication.destroy({ where: { id: req.params.publicationId }})
+                publication.destroy()
                     .then(() => res.status(200).json({ message: 'Publication supprimée !'}))
                     .catch(error => res.status(400).json({ error }));
         });

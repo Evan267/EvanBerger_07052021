@@ -62,11 +62,11 @@ exports.logIn = (req, res, next) => {
 };
 
 exports.deleteUser = (req, res, next) => {
-    return User.find({ where: { id: req.params.id }})
+    return User.findOne({ where: { id: req.params.userId }})
         .then(user => {
             const filename = user.image.split('/images/users/')[1];
             fs.unlink(`images/users/${filename}`, () => {
-                User.destroy({ where: { id: req.params.id }})
+                User.destroy({ where: { id: req.params.userId }})
                     .then(() => res.status(200).json({ message: 'Utilisateur supprimé !'}))
                     .catch(error => res.status(400).json({ error }));
             });

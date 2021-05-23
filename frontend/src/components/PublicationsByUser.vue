@@ -1,101 +1,72 @@
 <template>
     <div>
-      <form @submit.prevent="createPublication" class="createPublication">
-        <h1 class="createPublication__header">Nouvel publication</h1>
-        <div>
-            <textarea placeholder="Texte de votre publication..." id="text" name="text" v-model="postCreate" class="createPublication__txt"></textarea>
-        </div>
-        <div class="createPublication__buttonImage">
-            <button class="btn-upload" for="image" :style="{'background-image':'url(' + imageData + ')'}">
-                <p>Image ou GIF</p>
-                <i class="fas fa-plus-circle"></i>
-            </button>
-            <input type="file" id="image" name="image" @change="previewImage" accept="image/*">
-        </div>
-        <div>
-            <button type="submit" class="createPublication__submit">Publier</button>
-        </div>
-      </form>
-
+      <div class="userPublications">
+          <h1>Publications de {{ userGet.user.firstname }} {{ userGet.user.lastname }}</h1>
+          <img :src="imageData" alt="" class="userPublications__img">
+      </div>
       <div id="publications">
         <ul>
             <li v-for="item in dataGet.publication" v-bind:key="item.id" class="publication">
-                <router-link :to="{ name: 'publications-by-user', params: { userId: item.user.id }}" class="publication__user">
+                <div class="publication__user">
                     <img :src="item.user.image" alt="">
                     <div>
                         <p class="publication__user__fullname">{{ item.user.firstname }} {{ item.user.lastname }}</p>
                         <p class="publication__user__date">{{ item.createdAt }}</p>
                     </div>
-                </router-link>
+                </div>
                 <p class="publication__text">{{ item.text }} </p>
-                <router-link :to="{name: 'publication-details', params: { id: item.id }}"><img :src="item.image" class="publication__img"></router-link>
+                <img :src="item.image" class="publication__img">
                 <div class="publication__commentsAndLikes">
                     <router-link :to="{name: 'publication-details', params: { id: item.id }}"  class="publication__commentsAndLikes__comments"> {{ item.comments.length }} commentaires </router-link>
                     <div>
-                        <button class="publication__commentsAndLikes__like"><i class="fas fa-thumbs-up"></i><p></p></button>
-                        <button class="publication__commentsAndLikes__dislike"><i class="fas fa-thumbs-down"></i><p></p></button>
+                        <button class="publication__commentsAndLikes__like"><i class="fas fa-thumbs-up"></i></button>
+                        <button class="publication__commentsAndLikes__dislike"><i class="fas fa-thumbs-down"></i></button>
                     </div>
                 </div>
             </li>
         </ul>
-
-        {{ dataGet.publication }}
       </div>
     </div>
 </template>
 
 <script>
-
-
 export default {
-  name: 'PublicationsList',
+  name: 'PublicationsByUser',
   data() {
       return {
           postCreate: "",
           dataCreate: {},
           dataGet: {},
+          userGet:{},
           imageData:"",
       };
 
   },
   beforeMount () {
-      this.getPublications();
+      this.getUserData();
+      this.getUserPublications();
   },
   methods: {
-      async previewImage() {
-        var input = event.target;
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = (e) => {
-                this.imageData = e.target.result;
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-      },
-      async createPublication() {
-          const formData = new FormData();
-          const image = document.getElementById('image').files[0];
-          formData.append("text", JSON.stringify(this.postCreate));
-          formData.append("image", image);
-          const url = "http://localhost:3000/api/publications/" + localStorage.userId + "/publication";
-          const myHeader = new Headers({'Authorization': 'Basic ' + localStorage.getItem('token')});
+      async getUserData() {
+          const url = "http://localhost:3000/api/auth/" + this.$route.params.userId;
+          const myHeader = new Headers({'Content-Type': 'application/json',"Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
               {
-                  method:  "POST",
+                  method:  "GET",
                   headers: myHeader,
                   mode: "cors",
                   cache: "default",
-                  body: formData
               }
           );
           const res  = await fetch(request);
           const data = await res.json();
-          this.dataCreate = data;
-          this.$router.go();
+          this.userGet = data;
+          this.imageData = this.userGet.user.image;
+          console.log(this.userGet);
       },
-      async getPublications() {
-          const url = "http://localhost:3000/api/publications/" + localStorage.userId;
+      async getUserPublications() {
+          const url = "http://localhost:3000/api/publications/" + localStorage.userId + "/user/" + this.$route.params.userId;
           const  myHeader = new Headers({'Content-Type': 'application/json', 'Authorization': 'Basic ' + localStorage.getItem('token')});
           const request = new Request(
               url,
@@ -108,15 +79,13 @@ export default {
           const res  = await fetch(request);
           const data = await res.json();
           this.dataGet = data;
-          localStorage.modif = false;
+          console.log(this.dataGet);
       }
   }
 }
-
-
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
+
 <style scoped lang="scss">
 ul{padding:0}
 
@@ -124,11 +93,20 @@ li{list-style: none;}
 
 p{margin: 0;}
 
+.userPublications{
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    &__img{
+        width:15vw;
+        height:15vw;
+        border-radius:50%;
+        border: 1px solid #2C3F51;
+    }
+}
+
 .publication{
     box-shadow: none;
-}
-button{
-    cursor: pointer;
 }
 
 .createPublication{
@@ -217,7 +195,6 @@ button{
         display:flex;
         padding: 0.7vw 0.7vw;
         margin-bottom: 1vw;
-        text-decoration: none;
          img{
             border-radius: 50%;
             box-shadow: 0px 0px 2px grey;
@@ -228,11 +205,9 @@ button{
         &__fullname{
             font-weight: bold;
             font-size: 1.1em;
-            color: #2C3F51;
         }
         &__date{
             font-size: 0.6em;
-            color: #2C3F51;
         }
     }
     &__text{
@@ -264,8 +239,6 @@ button{
             width:50%;
             text-align: center;
             height:100%;
-            color:black;
-            text-decoration: none;
         }
         &__like{
             :hover{

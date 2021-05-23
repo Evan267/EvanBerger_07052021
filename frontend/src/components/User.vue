@@ -3,7 +3,7 @@
         <div class="user">
             <img :src="userGet.user.image" alt="Photo de l'utilisateur" class="user__img">
             <p class="user__fullname">{{ fullname }}</p>
-            <router-link :to="{ name: 'user-publication', params: { userId: userId }}" class="user__btn" >Vos publications</router-link>
+            <router-link :to="{ name: 'publications-by-user', params: { userId: userId }}" class="user__btn" >Vos publications</router-link>
             <router-link :to="{ name: 'user-profil', params: { userId: userId }}" class="user__btn">Votre Profil</router-link>
             <router-link :to="{ name: 'homePage'}" class="user__btn">Fil d'actualités</router-link>
         </div>

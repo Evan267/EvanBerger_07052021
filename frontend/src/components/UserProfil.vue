@@ -4,6 +4,7 @@
         <div class="formProfil__header">
             <h1>Profil</h1>
             <button class="formProfil__header__btn" type="button" @click="activate()"><i class="fas fa-pencil-alt"></i></button>
+            <button class="formProfil__header__deleteUser" type="button" @click="deleteUser()">Supprimer le compte</button>
         </div>
         <div class="formProfil__user-image">
             <button class="btn-upload" for="image" :style="{'background-image': 'url(' + imageData + ')'}"></button>
@@ -49,6 +50,7 @@ export default {
       return {
           userId: localStorage.userId,
           userPut: {},
+          userDelete:{},
           messageModif:{},
           imageData: '',
           error: {
@@ -135,6 +137,29 @@ export default {
           const data = await res.json();
           this.userPut = data;
           this.imageData = this.userPut.user.image;
+      },
+      async deleteUser(){
+          let r = confirm("Voulez-vous vraiment supprimer votre profil ?")
+          if(r == true){
+            console.log('suppression du compte');
+            const url = "http://localhost:3000/api/auth/" + localStorage.userId;
+            const myHeader = new Headers({'Content-Type': 'application/json',"Authorization": "Basic " + localStorage.getItem("token")});
+            const request = new Request(
+                url,
+                {
+                    method:  "DELETE",
+                    headers: myHeader,
+                    mode: "cors",
+                    cache: "default",
+                }
+            );
+            const res  = await fetch(request);
+            const data = await res.json();
+            this.userDelete = data;
+            this.$router.push({name: "login"})
+          } else {
+              console.log('rien')
+          }
       }
   }
 }
@@ -164,6 +189,18 @@ button{
             color: #2C3F51;
             &:hover{
                 color: #2C3F5133;
+            }
+        }
+        &__deleteUser{
+            box-shadow: 0 0 2px black;
+            justify-self: end;
+            margin-left: 17vw;
+            background-color: red;
+            color:white;
+            border:none;
+            border-radius: 2vw;
+            &:hover{
+                box-shadow: 0 0 4px black;
             }
         }
     }
