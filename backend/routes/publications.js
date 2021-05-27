@@ -14,7 +14,7 @@ router.get('/:userId/:publicationId', auth, publicationCtrl.getOnePublication);
 router.get('/:userId/user/:userGet', auth, publicationCtrl.getAllPublicationsByUser);
 router.get('/:userId/:publicationId/comments', auth, publicationCtrl.getAllCommentsByPublication);
 router.put('/:userId/:publicationId', auth, multer, publicationCtrl.modifyPublication);
-router.put('/:userId/comments/:commentId', auth, publicationCtrl.modifyComment);
+router.delete('/:userId/:publicationId/likes', auth, publicationCtrl.dislikePublication);
 router.delete('/:userId/publication/:publicationId', auth, multer, publicationCtrl.deletePublication);
 router.delete('/:userId/:commentId/comments', auth, publicationCtrl.deleteComment);
 

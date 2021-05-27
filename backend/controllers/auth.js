@@ -66,7 +66,7 @@ exports.deleteUser = (req, res, next) => {
         .then(user => {
             const filename = user.image.split('/images/users/')[1];
             fs.unlink(`images/users/${filename}`, () => {
-                User.destroy({ where: { id: req.params.userId }})
+                user.destroy({ where: { id: req.params.userId }})
                     .then(() => res.status(200).json({ message: 'Utilisateur supprimé !'}))
                     .catch(error => res.status(400).json({ error }));
             });
@@ -75,7 +75,7 @@ exports.deleteUser = (req, res, next) => {
 }
 
 exports.getUser = (req,res, next) => {
-    return User.findOne({attributes: ["birthdate", "email", "firstname", "lastname", "image"],where: { id: req.params.userId }})
+    return User.findOne({attributes: ["birthdate", "email", "firstname", "lastname", "image"],where: { id: req.params.id }})
         .then(user => res.status(200).json({user}))
         .catch(error => res.status(400).json({ error }));
 }

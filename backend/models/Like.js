@@ -5,9 +5,6 @@ module.exports = (sequelize, Sequelize) => {
         usersLiked: {
             type: DataTypes.SMALLINT,
         },
-        usersDisliked: {
-            type: DataTypes.SMALLINT,
-        }
     });
     return Like;
 }

@@ -3,11 +3,12 @@
     <form class="formProfil" @submit.prevent="verif">
         <div class="formProfil__header">
             <h1>Profil</h1>
-            <button class="formProfil__header__btn" type="button" @click="activate()"><i class="fas fa-pencil-alt"></i></button>
+            <button class="formProfil__header__btn" type="button" @click="activate()">Modifier<i class="fas fa-pencil-alt"></i></button>
             <button class="formProfil__header__deleteUser" type="button" @click="deleteUser()">Supprimer le compte</button>
         </div>
         <div class="formProfil__user-image">
-            <button class="btn-upload" for="image" :style="{'background-image': 'url(' + imageData + ')'}"></button>
+            <label for="image">Image d'utilisateur</label>
+            <button class="btn-upload" for="image" :style="{'background-image': 'url(' + imageData + ')'}">Ajouter image</button>
             <input type="file" id="image" name="new_user_image" @change="previewImage" accept="image/*" disabled>
         </div>
         <div class="formProfil__input">
@@ -27,7 +28,7 @@
             <input type="text" id="email" name="new_user_email" v-model="userPut.user.email" readonly>
         </div>
         <div class="formProfil__input">
-            <label for="password">Mot de passe</label>
+            <label for="passwordCreation">Mot de passe</label>
             <input type="password" id="passwordCreation" name="new_user_password" v-model="userPut.user.password" placeholder="********" readonly>
         </div>
         <div class="formProfil__input">
@@ -122,7 +123,7 @@ export default {
           this.$router.go();
       },
       async getUserData() {
-          const url = "http://localhost:3000/api/auth/" + localStorage.userId;
+          const url = "http://localhost:3000/api/auth/" + localStorage.userId + "/" + localStorage.userId;
           const myHeader = new Headers({'Content-Type': 'application/json',"Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -173,7 +174,10 @@ button{
 }
 
 .formProfil{
-    margin: 0 7vw;
+    margin: 0 2vw;
+    @media screen and (min-width: 700px){
+        margin: 0 7vw;
+    }
     &__header{
         display:flex;
         flex-direction: row;
@@ -193,12 +197,23 @@ button{
         }
         &__deleteUser{
             box-shadow: 0 0 2px black;
-            justify-self: end;
-            margin-left: 17vw;
-            background-color: red;
+            margin-left: 30vw;
+            background-color: #9E0000;
             color:white;
             border:none;
             border-radius: 2vw;
+            @media screen and (min-width: 700px){
+                margin-left: 23vw;
+            }
+            @media screen and (min-width: 1000px){
+                margin-left: 15vw;
+            }
+            @media screen and (min-width: 1350px){
+                margin-left: 17vw;
+            }
+            @media screen and (min-width: 1800px){
+                margin-left: 23vw;
+            }
             &:hover{
                 box-shadow: 0 0 4px black;
             }
@@ -217,17 +232,34 @@ button{
             right: 0;
             opacity:0;
             position: absolute;
-            width: 15vw;
-            height: 15vw;
+            width: 33vw;
+            height: 33vw;
             cursor:pointer;
+            @media screen and (min-width: 700px){
+                width: 20vw;
+                height: 20vw;
+            }
+            @media screen and (min-width: 1000px){
+                width: 15vw;
+                height: 15vw;
+            }
         }
         .btn-upload{
             background-position: center;
             border-radius:50%;
-            width: 15vw;
-            height: 15vw;
             background-size: cover;
             margin:0 31%;
+            width: 33vw;
+            height: 33vw;
+            cursor:pointer;
+            @media screen and (min-width: 700px){
+                width: 20vw;
+                height: 20vw;
+            }
+            @media screen and (min-width: 1000px){
+                width: 15vw;
+                height: 15vw;
+            }
         }
     }
     &__input{
@@ -240,6 +272,8 @@ button{
     }
     &__valid{
         margin:0 0 0 22vw;
+        display:flex;
+        justify-content: center;
         #reinit{
             background-color: transparent;
             color: #2C3F51;

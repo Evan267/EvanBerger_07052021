@@ -60,15 +60,70 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style scoped lang="scss">
 .logIn{
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    margin:0;
+}
+
+a{
+    color:#2C3F51;
+    text-decoration:none;
+    cursor:pointer;
+    &:hover{
+        opacity:40%;
+    }
+    @media screen and (min-width: 1900px){
+        font-size:0.9em;
+    }
+}
+
+button{
+    background-color:#2C3F51;
+    color:white;
+    padding:3vw 4vw;
+    border-radius:5vw;
+    border:none;
+    cursor:pointer;
+    &:hover{
+        opacity:70%;
+    }
+    @media screen and (min-width: 700px){
+        padding:2vw 3vw;
+        border-radius:4vw;
+    }
+    @media screen and (min-width: 1000px){
+        padding:1.5vw 2vw;
+        border-radius:3vw;
+    }
+    @media screen and (min-width: 1900px){
+        padding:1vw 1.5vw;
+        border-radius:2vw;
+        font-size:0.9em;
+    }
 }
 
 form{
-    width: 50%;
+    width: 100%;
+    @media screen and (min-width: 700px){
+        width:70%;
+    }
+    @media screen and (min-width: 1000px){
+        width:50%;
+    }
+    @media screen and (min-width: 1900px){
+        width:35%;
+        font-size:2em;
+    }
+}
+
+input{
+    @media screen and (min-width: 1900px){
+        font-size:0.8em;
+    }
 }
 
 
@@ -76,11 +131,25 @@ div{
     display: flex;
     flex-direction: column;
     margin: 2vw 10%;
+    @media screen and (min-width: 1900px){
+        margin: 1vw 10%;
+    }
 }
 
 #logInOrSignUp{
     flex-direction: row;
     justify-content: space-evenly;
+    align-items:center;
+    margin-top:8vw;
+    @media screen and (min-width: 700px){
+        margin-top:4vw;
+    }
+    @media screen and (min-width: 1000px){
+        margin-top:3vw;
+    }
+    @media screen and (min-width: 1900px){
+        margin-top:2vw;
+    }
 }
 
 </style>

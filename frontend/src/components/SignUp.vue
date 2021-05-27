@@ -2,8 +2,9 @@
   <div class="signUp">
     <form @submit.prevent="verif">
         <h1>S'inscrire</h1>
+        <div><label for="image">Photo de profil</label></div>
         <div class="user-image">
-            <button class="btn-upload" for="image" :style="{'background-image': 'url(' + imageData + ')'}"></button>
+            <button class="btn-upload" for="image" :style="{'background-image': 'url(' + imageData + ')'}">Image</button>
             <input type="file" id="image" name="new_user_image" @change="previewImage" accept="image/*">
         </div>
         <div>
@@ -24,7 +25,7 @@
         </div>
         <div>
             <label for="password">Mot de passe</label>
-            <input type="password" id="passwordCreation" name="new_user_password" v-model="post.password">
+            <input type="password" id="password" name="new_user_password" v-model="post.password">
             <p v-if="data.status === 403">{{ errorPassword }}</p>
         </div>
         <div>
@@ -33,7 +34,7 @@
             <p v-show="error.passwordNotDiff">Les mots de passes sont différents</p>
         </div>
         <div id="logInOrSignUp">
-            <button type="submit">Créer son compte</button>
+            <button type="submit" id="submit">Créer son compte</button>
             <router-link to="/login">Déjà inscrit</router-link>
         </div>
     </form>
@@ -128,34 +129,83 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style scoped lang="scss">
 .signUp{
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    margin:0;
 }
 form{
-    width: 50%;
+    width: 100%;
+    @media screen and (min-width: 700px){
+        width:70%;
+    }
+    @media screen and (min-width: 1000px){
+        width:50%;
+    }
+    @media screen and (min-width: 1900px){
+        width:35%;
+        font-size:2em;
+    }
 }
 
 div{
     display: flex;
     flex-direction: column;
     margin: 2vw 10%;
+    @media screen and (min-width: 1900px){
+        margin: 1vw 10%;
+    }
+}
+
+input{
+    @media screen and (min-width: 1900px){
+        font-size:0.8em;
+    }
 }
 
 #logInOrSignUp{
     flex-direction: row;
     justify-content: space-evenly;
+    align-items:center;
+    margin-top:8vw;
+    @media screen and (min-width: 700px){
+        margin-top:4vw;
+    }
+    @media screen and (min-width: 1000px){
+        margin-top:3vw;
+    }
+    @media screen and (min-width: 1900px){
+        margin-top:2vw;
+    }
+}
+
+#imageLabel{
+    display:block;
+    padding: 0 10%;
 }
 
 .btn-upload{
     background-position: center;
     border-radius:50%;
-    width: 15vw;
-    height: 15vw;
+    width: 35vw;
+    height: 35vw;
     background-size: cover;
     margin:0 31%;
+    @media screen and (min-width: 700px){
+        width: 25vw;
+        height: 25vw;
+    }
+    @media screen and (min-width: 1000px){
+        width: 20vw;
+        height: 20vw;
+    }
+    @media screen and (min-width: 1900px){
+        width: 14vw;
+        height: 14vw;
+    }
 }
 
 .user-image{
@@ -173,8 +223,58 @@ div{
     right: 0;
     opacity:0;
     position: absolute;
-    width: 15vw;
-    height: 15vw;
+    width: 35vw;
+    height: 35vw;
+    cursor:pointer;
+    @media screen and (min-width: 700px){
+        width: 25vw;
+        height: 25vw;
+    }
+    @media screen and (min-width: 1000px){
+        width: 20vw;
+        height: 20vw;
+    }
+    @media screen and (min-width: 1900px){
+        width: 14vw;
+        height: 14vw;
+    }
+}
+
+a{
+    color:#2C3F51;
+    text-decoration:none;
+    cursor:pointer;
+    &:hover{
+        opacity:40%;
+    }
+    @media screen and (min-width: 1900px){
+        font-size:0.9em;
+    }
+}
+
+#submit{
+    background-color:#2C3F51;
+    color:white;
+    padding:3vw 4vw;
+    border-radius:5vw;
+    border:none;
+    cursor:pointer;
+    &:hover{
+        opacity:70%;
+    }
+    @media screen and (min-width: 700px){
+        padding:2vw 3vw;
+        border-radius:4vw;
+    }
+    @media screen and (min-width: 1000px){
+        padding:1.5vw 2vw;
+        border-radius:3vw;
+    }
+    @media screen and (min-width: 1900px){
+        padding:1vw 1.5vw;
+        border-radius:2vw;
+        font-size:0.9em;
+    }
 }
 
 </style>

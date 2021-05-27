@@ -1,40 +1,43 @@
 <template>
   <div class="publicationPage">
     <div>
-        <router-link :to="{name: 'homePage'}" class="publicationPage__previous"><i class="fas fa-arrow-left"></i></router-link>
+        <router-link :to="{name: 'homePage'}" class="publicationPage__previous"><i class="fas fa-arrow-left"></i>Fil d'actualités</router-link>
     </div>
     <div class="publicationView">
         <div class="publication">
             <div class="publication__header">
-                <router-link :to="{ name: 'publications-by-user', params: { userId: dataGet.publication.user.id }}" class="publication__user">
-                    <img :src="dataGet.publication.user.image" alt="">
+                <router-link :to="{ name: 'publications-by-user', params: { userId: publicationUser.id }}" class="publication__user">
+                    <img :src="publicationUser.image" alt="Image de l'utilisateur à l'origine de la publication">
                     <div>
-                        <p class="publication__user__fullname">{{ fullname }}</p>
-                        <p class="publication__user__date">{{ dataGet.publication.createdAt }}</p>
+                        <h1 class="publication__user__fullname">{{ fullname }}</h1>
+                        <time class="publication__user__date">{{ date(dataGet.createdAt) }}</time>
                     </div>
                 </router-link>
-                <div v-if="userId == dataGet.publication.user.id" class="publication__headerBtn">
-                    <button class="publication__headerBtn__modify" v-on:click="activeModif()"><i class="fas fa-pencil-alt"></i></button>
-                    <button class="publication__headerBtn__delete" v-on:click="deletePublication()"><i class="fas fa-trash-alt"></i></button>
+                <div v-if="userId == publicationUser.id" class="publication__headerBtn">
+                    <button class="publication__headerBtn__modify" v-on:click="activeModif()"><i class="fas fa-pencil-alt"></i>Modifier</button>
+                    <button class="publication__headerBtn__delete" v-on:click="deletePublication()"><i class="fas fa-trash-alt"></i>Supprimer</button>
                 </div>
             </div>
             <div v-if="modif == 'false'">
-                <p class="publication__text">{{ dataGet.publication.text }} </p>
-                <img :src="dataGet.publication.image" class="publication__img">
+                <p class="publication__text">{{ dataGet.text }} </p>
+                <img :src="dataGet.image" alt="GIF publié" class="publication__img">
                 <div class="publication__commentsAndLikes">
                     <p class="publication__commentsAndLikes__comments"> {{ commentGet.comments.length }} commentaire</p>
-                    <div v-if="userLiked">
-                        <button class="publication__commentsAndLikes__like" @click.prevent="Like" style="color: green"><i class="fas fa-thumbs-up"></i></button>
-                        <button class="publication__commentsAndLikes__dislike" disabled><i class="fas fa-thumbs-down"></i></button>
+                    <div v-if="transition">
+
                     </div>
-                    <div v-else-if="userDisliked">
-                        <button class="publication__commentsAndLikes__like" disabled><i class="fas fa-thumbs-up"></i></button>
-                        <button class="publication__commentsAndLikes__dislike" @click.prevent="Dislike" style="color: red"><i class="fas fa-thumbs-down"></i></button>
+                    <div v-else id="likedislike">
+                        <div v-if="!userLiked">
+                            <button class="publication__commentsAndLikes__like" @click="Like()">J'aime</button>
+                        </div>
+                        <div v-else>
+                            <button class="publication__commentsAndLikes__like" @click="Dislike()">Je  n'aime plus</button>
+                        </div>
+                        <div class="publication__commentsAndLikes__countLikes">
+                            <p>{{ countLikes }}<i class="fas fa-heart"></i></p>
+                        </div>
                     </div>
-                    <div v-else>
-                        <button class="publication__commentsAndLikes__like" @click.prevent="Like">{{ this.countLikes }}<i class="fas fa-thumbs-up"></i></button>
-                        <button class="publication__commentsAndLikes__dislike" @click.prevent="Dislike">{{ this.countDislikes }}<i class="fas fa-thumbs-down"></i></button>
-                    </div>
+
                 </div>
             </div>
 
@@ -59,8 +62,8 @@
         </div>
 
         <form @submit.prevent="createComment" class="publication__commentForm" id="form">
-            <input type="text" class="publication__commentForm__input" name="text" v-model="commentCreate.text" placeholder="Commentaire">
-            <button type="submit" class="publication__commentForm__submit"><i class="fas fa-paper-plane"></i></button>
+            <input type="text" id="comment" class="publication__commentForm__input" name="text" v-model="commentCreate.text" placeholder="Commentaire">
+            <button type="submit" class="publication__commentForm__submit"><label for="comment">Commenter</label></button>
         </form>
         <div>
             <ul>
@@ -68,7 +71,7 @@
                     <img :src="item.userComment.image" class="publication__comments__userImage">
                     <div>
                         <p><span class="publication__comments__userFullname">{{ item.userComment.firstname }} {{ item.userComment.lastname }}</span> {{ item.text }} </p>
-                        <p class="publication__comments__createdDate">{{ item.createdAt }}</p>
+                        <p class="publication__comments__createdDate">{{ date(item.createdAt) }}</p>
                     </div>
                     <button class="publication__comments__delete" v-if="item.userId == userId" v-on:click="deleteComment(item.id)"><i class="fas fa-times"></i></button>
                 </li>
@@ -84,25 +87,26 @@ export default {
   data() {
       return {
           userId: localStorage.userId,
+          publicationUser: {},
+          publicationLikes:[],
           commentCreate: {},
           dataCreate: {},
           dataGet: {},
-          commentGet: {},
+          commentGet: [],
           deleteMessage: {},
           countLikes:0,
           userLiked: false,
-          countDislikes:0,
-          userDisliked: false,
           modif: localStorage.modif,
           imageData: '',
           putPublication: '',
-          messageModif: ""
+          messageModif: "",
+          transition:false
       };
 
   },
   computed: {
       fullname: function(){
-          return this.dataGet.publication.user.firstname  + ' ' +  this.dataGet.publication.user.lastname;
+          return this.publicationUser.firstname  + ' ' +  this.publicationUser.lastname;
       },
   },
   created () {
@@ -110,6 +114,33 @@ export default {
       this.getAllComments();
   },
   methods: {
+      date(date){
+          let dateFormat = new Date(date);
+          let dateParse = Number(dateFormat);
+          let now = Number(new Date());
+          let diff = now - dateParse;
+            if (diff > 604800000){
+                return dateFormat.getDate() + "/" + (dateFormat.getMonth() + 1) + "/" + dateFormat.getFullYear();
+            } else if (diff > 86400000) {
+              let j = diff / 86400000;
+              let timeDays = Math.round(j) + "j";
+              return timeDays;
+            } else if (diff > 3600000) {
+              let h = diff / 3600000;
+              let timeHours = Math.round(h) + "h";
+              return timeHours;
+            } else if (diff > 60000) {
+              let m = diff / 60000;
+              let timeMinutes = Math.round(m) + "min";
+              return timeMinutes;
+            } else if (diff > 1000) {
+              let s = diff / 1000;
+              let timeSeconds = Math.round(s) + "s";
+              return timeSeconds;
+            } else {
+              return "1s";
+            }
+      },
       async modifPublication(){
           const formData = new FormData();
           const image = document.getElementById('image').files[0];
@@ -178,12 +209,8 @@ export default {
           }
       },
       async Like(){
-          let like;
-          if (this.userLiked){
-              like = 0;
-          } else  {
-              like = 1;
-          }
+          this.transition = true;
+          let user = this.userId;
           const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id + "/likes";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
@@ -193,62 +220,33 @@ export default {
                   headers: myHeader,
                   mode: "cors",
                   cache: "default",
-                  body: JSON.stringify({like: like})
+                  body: JSON.stringify({userLike: user})
               }
           );
-          await fetch(request)
+          fetch(request)
           .then(res => res.text())
           .then(json => console.log(json))
           .catch(error => console.log(error));
           await this.getOnePublication();
       },
       async Dislike(){
-          let like;
-          if (this.userDisliked){
-              like = 0;
-          } else  {
-              like = -1;
-          }
-          console.log(like);
+          this.transition = true;
           const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id + "/likes";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
               {
-                  method:  "POST",
+                  method:  "DELETE",
                   headers: myHeader,
                   mode: "cors",
                   cache: "default",
-                  body: JSON.stringify({like: like})
               }
           );
-          await fetch(request)
+          fetch(request)
           .then(res => res.text())
           .then(json => console.log(json))
           .catch(error => console.log(error));
           await this.getOnePublication();
-      },
-      async countLikesAndDislikes(){
-          let countLikes = 0;
-          let countDislikes = 0;
-          this.userLiked = false;
-          this.userDisliked = false;
-          for (let i = 0; i < this.dataGet.publication.likes.length; i++){
-              if (this.dataGet.publication.likes[i].usersLiked !== null){
-                  countLikes += 1;
-              } else if (this.dataGet.publication.likes[i].usersDisliked !== null){
-                  countDislikes += 1;
-              }
-              if(this.dataGet.publication.likes[i].usersLiked == this.userId){
-                  this.userLiked = true;
-                  this.userDisliked = false;
-              } else if(this.dataGet.publication.likes[i].usersDisliked == this.userId){
-                  this.userLiked = false;
-                  this.userDisliked = true;
-              }
-          }
-          this.countLikes = countLikes;
-          this.countDislikes = countDislikes;
       },
       async createComment () {
           const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id + "/comments";
@@ -283,12 +281,37 @@ export default {
                   mode: "cors",
               }
           );
-          const res  = await fetch(request);
-          const data = await res.json();
-          this.dataGet = data;
-          await this.countLikesAndDislikes();
-          this.imageData = this.dataGet.publication.image;
-          this.putPublication = this.dataGet.publication.text;
+          fetch(request)
+            .then(res => {
+                if(res.status === 401){
+                    this.$router.push({name: "login"});
+                }else{
+                    return res.json();
+                }
+            })
+            .then(data => this.dataGet = data.publication)
+            .then(() => {
+                this.publicationUser = this.dataGet.user;
+                this.publicationLikes = this.dataGet.likes;
+                this.imageData = this.dataGet.image;
+                this.putPublication = this.dataGet.text;
+                console.log(this.dataGet);
+                console.log("longueur :" + this.publicationLikes.length);
+            })
+            .then(() => {
+                this.countLikes = this.publicationLikes.length;
+                this.userLiked = false;
+                for (let i = 0; i < this.publicationLikes.length; i++){
+                    if(this.dataGet.likes[i].usersLiked == this.userId){
+                        this.userLiked = true;
+                        console.log("l'utilisateur aime");
+                    }else{
+                        this.userLiked = false;
+                    }
+                }
+                this.transition = false;
+            })
+            .catch(error=> console.log(error));
       },
       async getAllComments() {
           const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id + "/comments";
@@ -331,15 +354,38 @@ button{
     cursor:pointer;
 }
 
+a{
+    color:#2C3F51;
+    text-decoration:none;
+}
+
+a:hover{
+    opacity:50%;
+}
+
 .publicationPage{
     display: grid;
-    grid-template-columns: 24vw 50vw 24vw;
+    grid-template-columns: 1fr;
     grid-gap: 1vw;
-    margin-top: 3vw;
+    margin-top: 8vw;
+    @media screen and (min-width: 700px){
+        margin: 4vw 10vw;
+    }
+    @media screen and (min-width: 1000px){
+        margin: 3vw 0;
+        grid-template-columns: 24vw 50vw 24vw;
+    }
     &__previous{
+        display:none;
         margin-left: 2vw;
         font-size:1.5em;
         color:#2C3F51;
+        @media screen and (min-width: 1000px){
+            display:block;
+        }
+        @media screen and (min-width: 1900px){
+            font-size: 2.5em;
+        }
     }
 }
 
@@ -348,6 +394,13 @@ button{
     border-radius: 0.5vw;
     width: 100%;
     margin-bottom:3vw;
+    font-size: 0.8em;
+    @media screen and (min-width: 700px){
+        font-size: 1em;
+    }
+    @media screen and (min-width: 1800px){
+        font-size: 1.3em;
+    }
     &__header{
         margin:1vw 1vw 0;
     }
@@ -358,11 +411,22 @@ button{
     &__txt{
         width: 90%;
         border:none;
-        margin: 1vw 2vw;
-        height:3vw;
+        margin: 4vw 5vw;
+        height: 15vw;
         resize: none;
         outline: none;
         font-family: Avenir, Helvetica, Arial, sans-serif;
+        @media screen and (min-width: 700px){
+            margin: 2vw 3vw;
+            height:5vw;
+        }
+        @media screen and (min-width: 1000px){
+            margin: 1vw 2vw;
+            height:3vw;
+        }
+        @media screen and (min-width: 1800px){
+            font-size: 1.2em;
+        }
     }
     &__buttonImage{
         display:inline-block;
@@ -386,9 +450,15 @@ button{
             background-position: center;
             background-size: cover;
             width:100%;
-            height:16vw;
+            height:40vw;
             border:none;
             color:#2C3F51;
+            @media screen and (min-width: 700px){
+                height:25vw;
+            }
+            @media screen and (min-width: 1000px){
+                height:16vw;
+            }
             p{font-size: 1.5em;}
             i {
                 margin:2vw 0;
@@ -397,16 +467,27 @@ button{
         }
     }
     &__submit{
-        margin: 1vw  40%;
-        height: 3vw;
-        width: 10vw;
+        margin: 4vw  31%;
+        height: 10vw;
+        width: 35vw;
         font-size: 1.2em;
-        border-radius: 2vw;
+        border-radius: 30vw;
         border:none;
         box-shadow: 0px 0px 3px grey;
         background-color:#2C3F51;
         color:white;
         cursor:pointer;
+        @media screen and (min-width: 700px){
+            margin: 2vw  39%;
+            height: 5vw;
+            width: 15vw;
+        }
+        @media screen and (min-width: 1000px){
+            margin: 1vw  40%;
+            height: 3vw;
+            width: 10vw;
+            border-radius: 2vw;
+        }
     }
     &__submit:hover{
         box-shadow: 0px 0px 9px grey;
@@ -420,8 +501,14 @@ button{
     width:100%;
     margin: 0 auto;
     box-shadow: 0px 0px 8px grey;
-    border-radius: 0.5vw;
+    border-radius: 3vw;
     padding-bottom:2vw;
+    @media screen and (min-width: 700px){
+        border-radius: 1.5vw;
+    }
+    @media screen and (min-width: 1000px){
+        border-radius: 0.5vw;
+    }
 }
 
 .publication {
@@ -430,11 +517,20 @@ button{
     &__header{
         display:flex;
         justify-content: space-between;
-        padding: 0.7vw 0.7vw;
+        padding: 3vw 3vw;
+        margin-bottom: 3vw;
+        @media screen and (min-width: 700px){
+            padding: 1.5vw 1.5vw;
+            margin-bottom: 1vw;
+        }
+        @media screen and (min-width: 1000px){
+            padding: 0.7vw 0.7vw;
+            margin-bottom: 1vw;
+        }
     }
     &__headerBtn{
         &__delete{
-            color: red;
+            color: #9E0000;
             background-color:transparent;
             border:none;
             &:hover{
@@ -452,38 +548,91 @@ button{
     }
     &__user{
         display:flex;
-        margin-bottom: 1vw;
-        color: #2C3F51;
-        text-decoration:none;
+        padding: 3vw 3vw;
+        margin-bottom: 3vw;
+        text-decoration: none;
+        @media screen and (min-width: 700px){
+            padding: 1.5vw 1.5vw;
+            margin-bottom: 1vw;
+        }
+        @media screen and (min-width: 1000px){
+            padding: 0.7vw 0.7vw;
+            margin-bottom: 1vw;
+        }
+        &:hover{
+            opacity:50%;
+        }
         img{
             border-radius: 50%;
             box-shadow: 0px 0px 2px grey;
-            width: 4vw;
-            height:4vw;
-            margin-right: 1vw;
+            width: 12vw;
+            height:12vw;
+            margin-right: 3vw;
+            object-fit: cover;
+            @media screen and (min-width: 700px){
+                width: 5vw;
+                height:5vw;
+                margin-right: 1.5vw;
+            }
+            @media screen and (min-width: 1000px){
+                width: 4vw;
+                height:4vw;
+                margin-right: 1vw;
+            }
+            @media screen and (min-width: 1450px){
+                width: 3vw;
+                height:3vw;
+            }
         }
         &__fullname{
             font-weight: bold;
             font-size: 1.1em;
+            margin: 0;
+            @media screen and (min-width: 1900px){
+                font-size: 1.5em;
+            }
         }
         &__date{
-            font-size: 0.6em;
+            font-size: 0.9em;
+            @media screen and (min-width: 1900px){
+                font-size: 1.1em;
+            }
         }
     }
     &__text{
-        padding: 2vw;
+        padding: 6vw;
+        @media screen and (min-width: 700px){
+            padding: 3vw;
+        }
+        @media screen and (min-width: 1000px){
+            padding: 2vw;
+        }
+        @media screen and (min-width: 1800px){
+            padding: 1vw;
+            font-size:1.2em
+        }
     }
     &__img{
         width: 100%;
-        height: max-content;
+        height: auto;
         box-shadow: 0px 0px 3px grey;
+        object-fit:contain;
     }
     &__commentsAndLikes{
         display: flex;
         border-top: 0.5px solid grey;
         align-items: center;
-         i{
-           font-size: 3vw;     
+        padding: 2vw 0;
+        font-size: 0.8em;
+        @media screen and (min-width: 700px){
+            padding: 0;
+            font-size: 1em;
+        }
+        @media screen and (min-width: 1400px){
+            font-size: 1.2em;
+        }
+        @media screen and (min-width: 1800px){
+            font-size: 1.5em;
         }
         div{
             width:50%;
@@ -502,39 +651,70 @@ button{
             height:100%;
         }
         &__like{
-            :hover{
-                color: green;
+            font-size:1em;
+            &:hover{
+                opacity: 50%;
             }
         }
-        &__dislike{
-            :hover{
-                color: red;
+        &__countLikes{
+            i{
+                font-size: 1.05em;
+                margin-left:1vw;
             }
         }
     }
     &__commentForm{
         margin: 1vw 2vw;
         border:3px solid #2C3F51;
-        border-radius: 4vw;
+        border-radius: 10vw;
         overflow: hidden;
         padding-left:3%;
         display: flex;
         flex-wrap:nowrap;
         align-items: center;
-        &__input{
-            width: 36.25vw;
+        height: 10vw;
+        @media screen and (min-width: 700px){
+            border-radius: 4vw;
+            height: 5vw;
+        }
+        @media screen and (min-width: 1000px){
             height: 4vw;
+        }
+        @media screen and (min-width: 1900px){
+            height: 3vw;
+        }
+        &__input{
+            width: 75vw;
+            height: 100%;
             border:none;
             background-color: white;
+            &:focus{
+                border:none;
+            }
+            @media screen and (min-width: 700px){
+                width: 65vw;
+            }
+            @media screen and (min-width: 1000px){
+                width: 38vw;
+            }
+            @media screen and (min-width: 1900px){
+                font-size: 1.3em;
+            }
         }
         &__submit{
-            width: 7vw;
-            height: 5vw;
+            width: 13vw;
+            height: 11vw;
             border:none;
             color: white;
             background-color: #2C3F51;
-            :hover{
-                box-shadow: 3px 3px 7px grey;
+            &:hover{
+                opacity:80%;
+            }
+            @media screen and (min-width: 700px){
+                width: 7vw;
+            }
+            @media screen and (min-width: 700px){
+                width: 7vw;
             }
         }
     }
@@ -547,9 +727,20 @@ button{
         &__userImage{
             border-radius: 50%;
             box-shadow: 0px 0px 1px grey;
-            width: 3vw;
-            height:3vw;
-            margin-right: 1vw;
+            width: 10vw;
+            height: 10vw;
+            margin: 0 3vw;
+            object-fit:cover;
+            @media screen and (min-width: 700px){
+                width: 5vw;
+                height:5vw;
+                margin: 0 2vw;
+            }
+            @media screen and (min-width: 1000px){
+                width: 3vw;
+                height:3vw;
+                margin: 0 1vw;
+            }
         }
         &__userFullname{
             font-weight: bold;
@@ -559,8 +750,16 @@ button{
             color:gray;
         }
         p{
-            margin-top: 0.1vw;
-            width: 41vw;
+            margin-top: 1vw;
+            width: 73vw;
+            @media screen and (min-width: 700px){
+                margin-top: 0.5vw;
+                width: 63vw;
+            }
+            @media screen and (min-width: 1000px){
+                margin-top: 0.1vw;
+                width: 41vw;
+            }
         }
         &__delete{
             background-color: transparent;
@@ -571,6 +770,13 @@ button{
                 color:  #2C3F5133;
             }
         }
+    }
+}
+
+#likedislike{
+    width:70%;
+    div{
+        width:100%;
     }
 }
 

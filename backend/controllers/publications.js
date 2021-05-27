@@ -33,19 +33,9 @@ exports.createComment = (req, res, next) => {
 }
 
 exports.likePublication = (req,res, next) => {
-    if(req.body.like == 1){
-        return Like.create({ publicationId: req.params.publicationId, usersLiked: req.params.userId })
-            .then(() => res.status(201).json({message: 'Aime'}))
-            .catch(error => res.status(400).json({error}));
-    } else if(req.body.like == 0){
-        return Like.destroy({ where: { publicationId: req.params.publicationId, [Op.or]: [{usersLiked: req.params.userId}, {usersDisliked: req.params.userId}]}})
-            .then(() => res.status(201).json({message: "Plus d'avis"}))
-            .catch(error => res.status(400).json({error}));
-    } else if(req.body.like == -1){
-        return Like.create({ publicationId: req.params.publicationId, usersDisliked: req.params.userId })
-            .then(() => res.status(201).json({message: "N'aime pas"}))
-            .catch(error => res.status(400).json({error}));
-    }
+    return Like.create({ publicationId: req.params.publicationId, usersLiked: req.params.userId })
+        .then(() => res.status(201).json({message: 'Aime'}))
+        .catch(error => res.status(400).json({error}));
 };
 
 exports.getOnePublication = (req, res, next) => {
@@ -70,7 +60,7 @@ exports.getAllCommentsByPublication = (req, res, next) =>  {
     return Comment.findAll({ where: { publicationId: req.params.publicationId },include: ["userComment"]})
         .then(comments => res.status(200).json({comments}))
         .catch(error => res.status(400).json({error}));
-}
+};
 
 exports.modifyPublication = (req, res, next) => {
     const publicationObject = JSON.parse(req.body.text);
@@ -97,16 +87,7 @@ exports.modifyPublication = (req, res, next) => {
                 })
             })
     }
-}
-
-exports.modifyComment = (req, res, next) => {
-    return Comment.update({
-        text: req.body.text,
-        image: `${req.protocol}://${req.get('host')}/images/comment/${req.file.filename}`,
-    }, { where: { id: req.body.commentId }})
-        .then(() => res.status(201).json({ message: "Le commentaire a été modifié"}))
-        .catch (error => res.status(400).json({error}))
-}
+};
 
 exports.deletePublication = (req, res, next) => {
     return Publication.findOne({ where: { id: req.params.publicationId }})
@@ -119,7 +100,13 @@ exports.deletePublication = (req, res, next) => {
         });
     })
         .catch(error => res.status(500).json({ error }));
-}
+};
+
+exports.dislikePublication = (req,res, next) => {
+    return Like.destroy({ where: { publicationId: req.params.publicationId, usersLiked: req.params.userId }})
+        .then(() => res.status(201).json({message: "N'aime plus"}))
+        .catch(error => res.status(400).json({error}));
+};
 
 exports.deleteComment = (req, res, next) => {
     Comment.destroy({ where: { id: req.params.commentId }})
