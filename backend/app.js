@@ -21,7 +21,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 const bcrypt = require('bcrypt');
 const db = require('./models');
 const User = db.users;
-db.sequelize.sync({ force: false })
+db.sequelize.sync({ force: true })
     .then(() => {
         console.log('Drop and re-sync db.');
     })

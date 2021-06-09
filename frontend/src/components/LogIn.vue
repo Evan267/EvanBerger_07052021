@@ -3,7 +3,7 @@
     <form @submit.prevent="connectUser">
         <h1>Se connecter</h1>
         <div>
-            <p v-show="error">L'adresse mail ou le mot de passe sont invalides.</p>
+            <p v-show="error" class="text-danger">L'adresse mail ou le mot de passe sont invalides.</p>
             <label for="email">Email:</label>
             <input type="text" id="email" name="user_email" v-model="post.email">
         </div>
@@ -47,7 +47,6 @@ export default {
           localStorage.setItem('token', data.token);
           localStorage.setItem('userId', data.userId);
           localStorage.setItem('isAdmin', data.isAdmin);
-          console.log(localStorage);
           if(localStorage.token !== "undefined"){
               this.$router.push({name: "homePage"})
           }else{
@@ -68,6 +67,12 @@ export default {
     align-items: center;
     width: 100%;
     margin:0;
+}
+
+.text-danger{
+    color: #9E0000;
+    font-size: 0.8em;
+    text-align: center;
 }
 
 a{
