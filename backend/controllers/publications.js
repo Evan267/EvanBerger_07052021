@@ -45,7 +45,7 @@ exports.getOnePublication = (req, res, next) => {
 };
 
 exports.getAllPublications = (req,res,next) => {
-    return Publication.findAll({include: ["comments", "likes",  "user"]})
+    return Publication.findAll({include: ["comments", "likes", "user"]})
         .then(publication => res.status(200).json({publication}))
         .catch(error => res.status(400).json({error}));
 };

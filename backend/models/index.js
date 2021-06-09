@@ -1,10 +1,11 @@
 const dbConfig = require("../config/db.config");
+const bcrypt = require('bcrypt');
 
 const Sequelize = require("sequelize");
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
   host: dbConfig.HOST,
   dialect: dbConfig.dialect,
-  operatorsAliases: false,
+  operatorsAliases: 0,
 
   pool: {
     max: dbConfig.pool.max,
@@ -51,6 +52,7 @@ db.likes.belongsTo(db.publications, {
     foreignKey: "publicationId",
     as: "publicationLike"
 });
+
 
 
 module.exports = db;

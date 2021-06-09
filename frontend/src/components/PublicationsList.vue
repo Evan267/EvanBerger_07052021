@@ -1,17 +1,19 @@
 <template>
     <div>
-      <form @submit.prevent="createPublication" class="createPublication">
+      <form @submit.prevent="checkText" class="createPublication">
         <h1 class="createPublication__header"><label for="text">Nouvelle publication</label></h1>
         <div>
             <textarea placeholder="Texte de votre publication..." id="text" name="text" v-model="postCreate" class="createPublication__txt"></textarea>
+            <span class="text-danger">{{ checkPublication }}</span>
         </div>
         <div class="createPublication__buttonImage">
             <button class="btn-upload" for="image" :style="{'background-image':'url(' + imageData + ')'}">
                 <label for="image">GIF</label>
                 <i class="fas fa-plus-circle"></i>
             </button>
-            <input type="file" id="image" name="image" @change="previewImage" accept="image/*">
+            <input type="file" id="image" name="image" @change="previewImage" accept="image/gif">
         </div>
+        <span class="text-danger">{{ checkImg }}</span>
         <div>
             <button type="submit" class="createPublication__submit">Publier</button>
         </div>
@@ -39,7 +41,7 @@
                             <button class="publication__commentsAndLikes__like" @click="Dislike(item.id)">Je  n'aime plus</button>
                         </div>
                         <div class="publication__commentsAndLikes__countLikes">
-                            <p>{{ item.likes.length }}<i class="fas fa-heart"></i></p>
+                            <p>{{ likesLength[index] }}<i class="fas fa-heart"></i></p>
                         </div>
                     </div>
                 </div>
@@ -61,7 +63,11 @@ export default {
           dataCreate: {},
           dataGet: {},
           imageData:"",
-          userLiked: []
+          userLiked: [],
+          likesLength: [],
+          test: true,
+          checkPublication:"",
+          checkImg:""
       };
 
   },
@@ -96,6 +102,19 @@ export default {
               return "1s";
             }
       },
+      async checkText (){
+        const regex = /(?=.*[;{}$])|(?=.*<script>)/;
+        console.log(this.postCreate);
+        const checkTxt = regex.test(this.postCreate);
+        console.log(checkTxt)
+        if(checkTxt == true){
+            this.checkPublication = "Le texte de votre publication ne doit pas commporter les caractères ';', '{', '}', '$' ou la chaine '<script>'."
+        }else if (this.imageData == ""){
+            this.checkImg = "Votre publication doit contenir un GIF."
+        }else{
+            await this.createPublication();
+        }
+      },
       async Like(publicationId){
           const url = "http://localhost:3000/api/publications/" + this.userId + "/" + publicationId + "/likes";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
@@ -111,9 +130,11 @@ export default {
           );
           fetch(request)
           .then(res => res.text())
-          .then(json => console.log(json))
+          .then(json => {
+              this.getPublications();
+              console.log(json)
+          })
           .catch(error => console.log(error));
-          await this.getPublications();
       },
       async Dislike(publicationId){
           const url = "http://localhost:3000/api/publications/" + this.userId + "/" + publicationId + "/likes";
@@ -129,9 +150,11 @@ export default {
           );
           fetch(request)
           .then(res => res.text())
-          .then(json => console.log(json))
+          .then(json => {
+              this.getPublications();
+              console.log(json)
+          })
           .catch(error => console.log(error));
-          await this.getPublications();
       },
       async previewImage() {
         var input = event.target;
@@ -183,6 +206,7 @@ export default {
                 this.userLiked = [];
                 for(let i = 0; i < this.dataGet.publication.length; i++){
                     this.userLiked.push(false);
+                    this.likesLength[i] = this.dataGet.publication[i].likes.length;
                     for(let x = 0; x < this.dataGet.publication[i].likes.length; x++){
                         if(this.dataGet.publication[i].likes[x].usersLiked == this.userId){
                             this.userLiked[i] = true;
@@ -212,9 +236,11 @@ a{
     text-decoration:none;
 }
 
-.publication{
-    box-shadow: none;
+.text-danger{
+    color: #9E0000;
+    font-size: 0.8em;
 }
+
 button{
     cursor: pointer;
 }
@@ -348,9 +374,11 @@ button{
     margin:3vw 0;
     @media screen and (min-width: 700px){
         border-radius: 1.5vw;
+        margin:2vw 0;
     }
     @media screen and (min-width: 1000px){
         border-radius: 0.5vw;
+        margin:1vw 0;
     }
     &__user{
         display:flex;
@@ -466,6 +494,7 @@ button{
             }
         }
         &__countLikes{
+            margin: auto 0;
             i{
                 font-size: 1.05em;
                 margin-left:1vw;

@@ -1,7 +1,7 @@
 <template>
   <div class="publicationPage">
     <div>
-        <router-link :to="{name: 'homePage'}" class="publicationPage__previous"><i class="fas fa-arrow-left"></i>Fil d'actualités</router-link>
+        <router-link :to="{name: 'homePage'}" class="publicationPage__previous"><i class="fas fa-arrow-left"></i> Fil d'actualités</router-link>
     </div>
     <div class="publicationView">
         <div class="publication">
@@ -14,15 +14,18 @@
                     </div>
                 </router-link>
                 <div v-if="userId == publicationUser.id" class="publication__headerBtn">
-                    <button class="publication__headerBtn__modify" v-on:click="activeModif()"><i class="fas fa-pencil-alt"></i>Modifier</button>
-                    <button class="publication__headerBtn__delete" v-on:click="deletePublication()"><i class="fas fa-trash-alt"></i>Supprimer</button>
+                    <button class="publication__headerBtn__modify" v-on:click="activeModif()"><i class="fas fa-pencil-alt"></i> Modifier</button>
+                    <button class="publication__headerBtn__delete" v-on:click="deletePublication()"><i class="fas fa-trash-alt"></i> Supprimer</button>
+                </div>
+                <div v-else-if="isAdmin == 'true'" class="publication__headerBtn">
+                    <button class="publication__headerBtn__delete" v-on:click="deletePublication()"><i class="fas fa-trash-alt"></i> Supprimer</button>
                 </div>
             </div>
             <div v-if="modif == 'false'">
                 <p class="publication__text">{{ dataGet.text }} </p>
                 <img :src="dataGet.image" alt="GIF publié" class="publication__img">
                 <div class="publication__commentsAndLikes">
-                    <p class="publication__commentsAndLikes__comments"> {{ commentGet.comments.length }} commentaire</p>
+                    <p class="publication__commentsAndLikes__comments"> {{ commentLength }} commentaire</p>
                     <div v-if="transition">
 
                     </div>
@@ -42,17 +45,18 @@
             </div>
 
             <div v-else>
-                <form @submit.prevent="modifPublication" class="modifPublication">
+                <form @submit.prevent="checkText" class="modifPublication">
                     <h1 class="modifPublication__header">Modifier publication</h1>
                     <div>
                         <textarea placeholder="Texte de votre publication..." id="text" name="text" v-model="putPublication" class="modifPublication__txt"></textarea>
+                        <span class="text-danger">{{ checkPublication }}</span>
                     </div>
                     <div class="modifPublication__buttonImage">
                         <button class="btn-upload" for="image" :style="{'background-image':'url(' + imageData + ')'}">
-                            <p>Image ou GIF</p>
+                            <p>GIF</p>
                             <i class="fas fa-plus-circle"></i>
                         </button>
-                        <input type="file" id="image" name="image" @change="previewImage" accept="image/*">
+                        <input type="file" id="image" name="image" @change="previewImage" accept="image/gif">
                     </div>
                     <div>
                         <button type="submit" class="modifPublication__submit">Publier</button>
@@ -63,7 +67,7 @@
 
         <form @submit.prevent="createComment" class="publication__commentForm" id="form">
             <input type="text" id="comment" class="publication__commentForm__input" name="text" v-model="commentCreate.text" placeholder="Commentaire">
-            <button type="submit" class="publication__commentForm__submit"><label for="comment">Commenter</label></button>
+            <button type="submit" class="publication__commentForm__submit"><label for="comment" id="commenter">Commenter</label><i id="icon" class="fas fa-paper-plane"></i></button>
         </form>
         <div>
             <ul>
@@ -73,7 +77,7 @@
                         <p><span class="publication__comments__userFullname">{{ item.userComment.firstname }} {{ item.userComment.lastname }}</span> {{ item.text }} </p>
                         <p class="publication__comments__createdDate">{{ date(item.createdAt) }}</p>
                     </div>
-                    <button class="publication__comments__delete" v-if="item.userId == userId" v-on:click="deleteComment(item.id)"><i class="fas fa-times"></i></button>
+                    <button class="publication__comments__delete" v-if="item.userId == userId || isAdmin == 'true'" v-on:click="deleteComment(item.id)"><i class="fas fa-times"></i></button>
                 </li>
             </ul>
         </div>
@@ -87,12 +91,14 @@ export default {
   data() {
       return {
           userId: localStorage.userId,
+          isAdmin: localStorage.isAdmin,
           publicationUser: {},
           publicationLikes:[],
           commentCreate: {},
           dataCreate: {},
           dataGet: {},
           commentGet: [],
+          commentLength: '',
           deleteMessage: {},
           countLikes:0,
           userLiked: false,
@@ -100,7 +106,8 @@ export default {
           imageData: '',
           putPublication: '',
           messageModif: "",
-          transition:false
+          transition:false,
+          checkPublication:""
       };
 
   },
@@ -140,6 +147,17 @@ export default {
             } else {
               return "1s";
             }
+      },
+      async checkText (){
+        const regex = /(?=.*[;{}$])|(?=.*<script>)/;
+        console.log(this.putPublication);
+        const checkTxt = regex.test(this.putPublication);
+        console.log(checkTxt);
+        if(checkTxt == true){
+            this.checkPublication = "Le texte de votre publication ne doit pas commporter les caractères ';', '{', '}', '$' ou la chaine '<script>'."
+        }else{
+            await this.modifPublication();
+        }
       },
       async modifPublication(){
           const formData = new FormData();
@@ -209,7 +227,6 @@ export default {
           }
       },
       async Like(){
-          this.transition = true;
           let user = this.userId;
           const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id + "/likes";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
@@ -225,12 +242,14 @@ export default {
           );
           fetch(request)
           .then(res => res.text())
-          .then(json => console.log(json))
+          .then(json => {
+              this.countLikes += 1;
+              this.userLiked = true;
+              console.log(json);
+            })
           .catch(error => console.log(error));
-          await this.getOnePublication();
       },
       async Dislike(){
-          this.transition = true;
           const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id + "/likes";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
@@ -244,9 +263,12 @@ export default {
           );
           fetch(request)
           .then(res => res.text())
-          .then(json => console.log(json))
+          .then(json => {
+              this.countLikes -= 1;
+              this.userLiked = false;
+              console.log(json);
+            })
           .catch(error => console.log(error));
-          await this.getOnePublication();
       },
       async createComment () {
           const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id + "/comments";
@@ -295,8 +317,6 @@ export default {
                 this.publicationLikes = this.dataGet.likes;
                 this.imageData = this.dataGet.image;
                 this.putPublication = this.dataGet.text;
-                console.log(this.dataGet);
-                console.log("longueur :" + this.publicationLikes.length);
             })
             .then(() => {
                 this.countLikes = this.publicationLikes.length;
@@ -304,12 +324,12 @@ export default {
                 for (let i = 0; i < this.publicationLikes.length; i++){
                     if(this.dataGet.likes[i].usersLiked == this.userId){
                         this.userLiked = true;
-                        console.log("l'utilisateur aime");
+                        
                     }else{
                         this.userLiked = false;
                     }
                 }
-                this.transition = false;
+                console.log(this.userLiked);
             })
             .catch(error=> console.log(error));
       },
@@ -327,6 +347,7 @@ export default {
           const res  = await fetch(request);
           const data = await res.json();
           this.commentGet = data;
+          this.commentLength = data.comments.length;
       },
       async deleteComment(id) {
           const url = "http://localhost:3000/api/publications/" + this.userId + "/" + id + "/comments";
@@ -357,6 +378,16 @@ button{
 a{
     color:#2C3F51;
     text-decoration:none;
+}
+
+ul{
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.text-danger{
+    color: #9E0000;
+    font-size: 0.8em;
 }
 
 a:hover{
@@ -529,6 +560,18 @@ a:hover{
         }
     }
     &__headerBtn{
+        display: flex;
+        flex-direction: column;
+        margin-top:3vw;
+        @media screen and (min-width: 700px){
+            flex-direction: row;
+            justify-content: start;
+            align-items: start;
+            margin-top:2vw;
+        }
+        @media screen and (min-width: 1000px){
+            margin-top:1vw;
+        }
         &__delete{
             color: #9E0000;
             background-color:transparent;
@@ -657,6 +700,7 @@ a:hover{
             }
         }
         &__countLikes{
+            margin: auto 0;
             i{
                 font-size: 1.05em;
                 margin-left:1vw;
@@ -713,7 +757,10 @@ a:hover{
             @media screen and (min-width: 700px){
                 width: 7vw;
             }
-            @media screen and (min-width: 700px){
+            @media screen and (min-width: 1000px){
+                width: 10vw;
+            }
+            @media screen and (min-width: 1500px){
                 width: 7vw;
             }
         }
@@ -770,6 +817,19 @@ a:hover{
                 color:  #2C3F5133;
             }
         }
+    }
+}
+
+#commenter{
+    display: none;
+    @media screen and (min-width: 1000px){
+        display:inline;
+    }
+}
+
+#icon{
+    @media screen and (min-width: 1000px){
+        display:none;
     }
 }
 

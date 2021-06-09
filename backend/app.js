@@ -2,8 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const helmet = require('helmet');
-const dotenv = require('dotenv');
-dotenv.config();
 
 const app = express();
 
@@ -20,11 +18,30 @@ app.use(bodyParser.json());
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+const bcrypt = require('bcrypt');
 const db = require('./models');
+const User = db.users;
 db.sequelize.sync({ force: false })
     .then(() => {
         console.log('Drop and re-sync db.');
-    });
+    })
+    .then(() => {
+        bcrypt.hash('GroupoAdmin!63', 10)
+        .then(hash => {
+            let admin = {
+            email: "groupomania@admin.com",
+            password: hash,
+            firstname: "Administrateur",
+            lastname: "Groupomania",
+            birthdate: new Date(1970, 1, 1),
+            isAdmin: "true"
+            };
+            User.create(admin)
+            .then(() => console.log("admin créé"))
+            .catch(error => console.log(error));
+        })
+        .catch(error => console.log(error));
+    })
 
 const userRoute = require('./routes/auth');
 app.use('/api/auth', userRoute);

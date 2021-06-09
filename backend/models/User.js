@@ -25,6 +25,10 @@ module.exports = (sequelize, Sequelize) => {
         image: {
             type: DataTypes.STRING(150),
             defaultValue: "http://localhost:3000/images/users/default.jpg"
+        },
+        isAdmin: {
+            type: DataTypes.STRING,
+            defaultValue: "false"
         }
     });
     return User;

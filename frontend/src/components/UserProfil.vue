@@ -1,35 +1,40 @@
 <template>
   <div class="userPage"> 
-    <form class="formProfil" @submit.prevent="verif">
+    <form @submit.prevent="verif" name="profilForm">
         <div class="formProfil__header">
             <h1>Profil</h1>
             <button class="formProfil__header__btn" type="button" @click="activate()">Modifier<i class="fas fa-pencil-alt"></i></button>
             <button class="formProfil__header__deleteUser" type="button" @click="deleteUser()">Supprimer le compte</button>
         </div>
+        <div class="formProfil__input"><label for="image">Photo de profil</label></div>
         <div class="formProfil__user-image">
-            <label for="image">Image d'utilisateur</label>
             <button class="btn-upload" for="image" :style="{'background-image': 'url(' + imageData + ')'}">Ajouter image</button>
             <input type="file" id="image" name="new_user_image" @change="previewImage" accept="image/*" disabled>
         </div>
         <div class="formProfil__input">
             <label for="firstname">Prénom</label>
-            <input type="text" id="firstname" name="user_firstname" v-model="userPut.user.firstname" readonly>
+            <input type="text" id="firstname" name="user_firstname" v-model="userPut.user.firstname" readonly required aria-required="true" pattern="[A-Z,a-z,-]{1,}" maxlength='25'>
+            <span class="text-danger"></span>
         </div>
         <div class="formProfil__input">
             <label for="lastname">Nom</label>
-            <input type="text" id="lastname" name="user_lastname" v-model="userPut.user.lastname" readonly>
+            <input type="text" id="lastname" name="user_lastname" v-model="userPut.user.lastname" readonly required aria-required="true" pattern="[A-Z,a-z,-]{1,}" maxlength='25'>
+            <span class="text-danger"></span>
         </div>
         <div class="formProfil__input">
             <label for="birthdate">Date de naissance</label>
-            <input type="date" id="birthdate" name="user_birthdate" v-model="userPut.user.birthdate" readonly>
+            <input type="date" id="birthdate" name="user_birthdate" v-model="userPut.user.birthdate" readonly required aria-required="true">
+            <span class="text-danger"></span>
         </div>
         <div class="formProfil__input">
             <label for="email">Email</label>
-            <input type="text" id="email" name="new_user_email" v-model="userPut.user.email" readonly>
+            <input type="text" id="email" name="new_user_email" v-model="userPut.user.email" readonly required aria-required="true" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+            <span class="text-danger"></span>
         </div>
         <div class="formProfil__input">
             <label for="passwordCreation">Mot de passe</label>
-            <input type="password" id="passwordCreation" name="new_user_password" v-model="userPut.user.password" placeholder="********" readonly>
+            <input type="password" id="passwordCreation" name="new_user_password" v-model="userPut.user.password" placeholder="********" readonly pattern="(?=.*\d)(?=.*[!@#$&*])(?=.*[a-z])(?=.*[A-Z]).{6,}">
+            <span class="text-danger"></span>
         </div>
         <div class="formProfil__input">
             <label for="passwordConfirmation">Confirmer le mot de passe</label>
@@ -50,7 +55,11 @@ export default {
   data() {
       return {
           userId: localStorage.userId,
-          userPut: {},
+          userPut: {
+              user: {
+                  firstname: '',
+              }
+          },
           userDelete:{},
           messageModif:{},
           imageData: '',
@@ -73,6 +82,7 @@ export default {
           for (let i=0; i < button.length; i++){
               button[i].disabled = false;
           }
+          await this.verifInput();
       },
       async previewImage() {
         var input = event.target;
@@ -86,6 +96,46 @@ export default {
       },
       async reinit() {
           this.$router.go();
+      },
+      async verifInput(){
+        let form = document.forms['profilForm'];
+        let formLength = form.elements.length - 1;
+        console.log(form);
+        console.log(formLength);
+        let errorMessage = [
+            "Ce champ ne doit comporter que des lettres ou des tirets. Ex: Eric, Adeline...",
+            "Ce champ ne doit comporter que des lettres. Ex: Griezmann, Pogba...",
+            "Ce champ doit respecter le fomat suivant: JJ/MM/AAAA.",
+            "Ce champ doit respecter le format des adresses mails. Ex: exemple@gmail.com...",
+            "Le mot de passe doit contenir au moins 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial et au moins 6 caractères."
+        ];
+
+        for(let i = 0; i < formLength - 6; i++){
+            let element = form.elements[i+4];
+            let missValue = element.parentNode.querySelector("span");
+            element.onchange = function(e) {
+                e.preventDefault();
+                missValue.textContent = '';
+                if (!e.target.validity.valid) {
+                    if (e.target.value.length == 0) {
+                        missValue.textContent = "Veuillez renseigner le champ"
+                    } else {
+                        missValue.textContent = errorMessage[i];
+                    }
+                }
+            };
+            element.oninvalid = function(e) {
+                e.preventDefault();
+                missValue.textContent = '';
+                if (!e.target.validity.valid) {
+                    if (e.target.value.length == 0) {
+                        missValue.textContent = "Veuillez renseigner le champ"
+                    } else {
+                        missValue.textContent = errorMessage[i];
+                    }
+                }
+            }
+        }
       },
       async verif(){
           const verifPassword = document.getElementById('passwordConfirmation').value;
@@ -173,6 +223,11 @@ button{
     cursor:pointer;
 }
 
+.text-danger{
+    color: #9E0000;
+    font-size: 0.8em;
+}
+
 .formProfil{
     margin: 0 2vw;
     @media screen and (min-width: 700px){
@@ -197,22 +252,22 @@ button{
         }
         &__deleteUser{
             box-shadow: 0 0 2px black;
-            margin-left: 30vw;
+            margin-left: 25vw;
             background-color: #9E0000;
             color:white;
             border:none;
             border-radius: 2vw;
             @media screen and (min-width: 700px){
-                margin-left: 23vw;
+                margin-left: 27vw;
             }
             @media screen and (min-width: 1000px){
-                margin-left: 15vw;
+                margin-left: 21vw;
             }
             @media screen and (min-width: 1350px){
-                margin-left: 17vw;
+                margin-left: 27vw;
             }
             @media screen and (min-width: 1800px){
-                margin-left: 23vw;
+                margin-left: 35vw;
             }
             &:hover{
                 box-shadow: 0 0 4px black;

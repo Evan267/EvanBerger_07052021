@@ -42,11 +42,16 @@ export default {
   data() {
       return {
           userId: localStorage.userId,
-          postCreate: "",
+          postCreate: '',
           dataCreate: {},
           dataGet: {},
-          userGet:{},
-          imageData:"",
+          userGet:{
+              user: {
+                firstname: '',
+                lastname: '',
+              }
+          },
+          imageData:'',
           userLiked: []
       };
 
@@ -340,6 +345,7 @@ button{cursor:pointer}
             }
         }
         &__countLikes{
+            margin: auto 0;
             i{
                 font-size: 1.05em;
                 margin-left:1vw;

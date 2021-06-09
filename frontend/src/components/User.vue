@@ -3,7 +3,7 @@
         <nav class="user">
             <div class="deroulant">
                 <div class="user__info">
-                    <img :src="image" alt="Photo de l'utilisateur" class="user__img">
+                    <img :src="userGet.user.image" alt="Photo de l'utilisateur" class="user__img">
                     <h2 class="user__fullname">{{ fullname }}</h2>
                 </div>
                 <ul class="sous">
@@ -26,15 +26,18 @@ export default {
       return {
           userId: localStorage.userId,
           post: {},
-          userGet: {},
-          image:'',
-          firstname:'',
-          lastname:''
+          userGet: {
+              user: {
+                  firstname:'',
+                  lastname:'',
+                  image:''
+              }
+          },
       };
   },
   computed: {
       fullname: function(){
-          return this.firstname  + ' ' +  this.lastname;
+          return this.userGet.user.firstname  + ' ' +  this.userGet.user.lastname;
       }
   },
   created (){
@@ -62,11 +65,6 @@ export default {
                 }
             })
             .then(data => this.userGet = data)
-            .then(() => {
-                this.image = this.userGet.user.image;
-                this.firstname = this.userGet.user.firstname;
-                this.lastname = this.userGet.user.lastname;
-            })
             .catch(error=> console.log(error))
       }
   }

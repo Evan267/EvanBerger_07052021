@@ -1,6 +1,6 @@
 <template>
   <div class="signUp">
-    <form @submit.prevent="verif">
+    <form @submit.prevent="verif" name="signUpForm">
         <h1>S'inscrire</h1>
         <div><label for="image">Photo de profil</label></div>
         <div class="user-image">
@@ -9,29 +9,33 @@
         </div>
         <div>
             <label for="firstname">Prénom</label>
-            <input type="text" id="firstname" name="new_user_firstname" v-model="post.firstname">
+            <input type="text" id="firstname" name="new_user_firstname" v-model="post.firstname" required aria-required="true" pattern="[A-Z,a-z,-]{1,}">
+            <span class="text-danger"></span>
         </div>
         <div>
             <label for="lastname">Nom</label>
-            <input type="text" id="lastname" name="new_user_lastname" v-model="post.lastname">
+            <input type="text" id="lastname" name="new_user_lastname" v-model="post.lastname" required aria-required="true" pattern="[A-Z,a-z,-]{1,}">
+            <span class="text-danger"></span>
         </div>
         <div>
             <label for="birthdate">Date de naissance</label>
-            <input type="date" id="birthdate" name="new_user_birthdate" v-model="post.birthdate">
+            <input type="date" id="birthdate" name="new_user_birthdate" v-model="post.birthdate" required aria-required="true">
+            <span class="text-danger"></span>
         </div>
         <div>
             <label for="email">Email</label>
-            <input type="text" id="email" name="new_user_email" v-model="post.email">
+            <input type="text" id="email" name="new_user_email" v-model="post.email" required aria-required="true"  pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+            <span class="text-danger"></span>
         </div>
         <div>
             <label for="password">Mot de passe</label>
-            <input type="password" id="password" name="new_user_password" v-model="post.password">
-            <p v-if="data.status === 403">{{ errorPassword }}</p>
+            <input type="password" id="password" name="new_user_password" required aria-required="true" v-model="post.password" pattern="(?=.*\d)(?=.*[!@#$&*])(?=.*[a-z])(?=.*[A-Z]).{6,}">
+            <span class="text-danger"></span>
         </div>
         <div>
             <label for="passwordConfirmation">Confirmer le mot de passe</label>
-            <input type="password" id="passwordConfirmation" name="new_user_password_confirmation">
-            <p v-show="error.passwordNotDiff">Les mots de passes sont différents</p>
+            <input type="password" id="passwordConfirmation" name="new_user_password_confirmation" aria-required="true">
+            <p v-show="error.passwordNotDiff" class="text-danger">Les mots de passes sont différents</p>
         </div>
         <div id="logInOrSignUp">
             <button type="submit" id="submit">Créer son compte</button>
@@ -62,6 +66,9 @@ export default {
           return this.data.message.replace('"', '').replace('"', '');
       }
   },
+  mounted() {
+      this.verifInput();
+  },
   methods: {
       async previewImage() {
         var input = event.target;
@@ -73,13 +80,51 @@ export default {
             reader.readAsDataURL(input.files[0]);
         }
       },
+      async verifInput(){
+        let form = document.forms['signUpForm'];
+        let formLength = form.elements.length - 1;
+        let errorMessage = [
+            "Ce champ ne doit comporter que des lettres ou des tirets. Ex: Eric, Adeline...",
+            "Ce champ ne doit comporter que des lettres. Ex: Griezmann, Pogba...",
+            "Ce champ doit respecter le fomat suivant: JJ/MM/AAAA.",
+            "Ce champ doit respecter le format des adresses mails. Ex: exemple@gmail.com...",
+            "Le mot de passe doit contenir au moins 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial et au moins 6 caractères."
+        ];
+
+        for(let i = 0; i < formLength - 3; i++){
+            let element = form.elements[i+2];
+            let missValue = element.parentNode.querySelector("span");
+            element.onchange = function(e) {
+                e.preventDefault();
+                missValue.textContent = '';
+                if (!e.target.validity.valid) {
+                    if (e.target.value.length == 0) {
+                        missValue.textContent = "Veuillez renseigner le champ"
+                    } else {
+                        missValue.textContent = errorMessage[i];
+                    }
+                }
+            };
+            element.oninvalid = function(e) {
+                e.preventDefault();
+                missValue.textContent = '';
+                if (!e.target.validity.valid) {
+                    if (e.target.value.length == 0) {
+                        missValue.textContent = "Veuillez renseigner le champ"
+                    } else {
+                        missValue.textContent = errorMessage[i];
+                    }
+                }
+            }
+        }
+      },
       async verif(){
-          const verifPassword = document.getElementById('passwordConfirmation').value;
-          if( verifPassword === this.post.password){
-              this.createUser();
-          } else {
-              this.error.passwordNotDiff = true;
-          }
+        const verifPassword = document.getElementById('passwordConfirmation').value;
+        if( verifPassword === this.post.password){
+            this.createUser();
+        } else {
+            this.error.passwordNotDiff = true;
+        }
       },
       async createUser() {
           const formData = new FormData();
@@ -164,6 +209,11 @@ input{
     @media screen and (min-width: 1900px){
         font-size:0.8em;
     }
+}
+
+.text-danger{
+    color: #9E0000;
+    font-size: 0.8em;
 }
 
 #logInOrSignUp{
