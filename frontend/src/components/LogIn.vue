@@ -14,6 +14,7 @@
         <div id="logInOrSignUp">
             <router-link to="/signup">S'inscrire</router-link>
             <button type="submit">Se connecter</button>
+            
         </div>
     </form>
   </div>

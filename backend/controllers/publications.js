@@ -90,7 +90,7 @@ exports.modifyPublication = (req, res, next) => {
 };
 
 exports.deletePublication = (req, res, next) => {
-    return Publication.findOne({ where: { id: req.params.publicationId }})
+    return Publication.findOne({ where: { id: req.params.publicationId }, include: ["comments", "likes"]})
         .then(publication => {
             const filename = publication.image.split('/images/publications/')[1];
             fs.unlink(`images/publications/${filename}`, () => {

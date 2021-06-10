@@ -164,7 +164,6 @@ export default {
           const data = await res.json();
           localStorage.setItem('token', data.token);
           localStorage.setItem('userId', data.userId);
-          console.log(localStorage);
           if(localStorage.token !== "undefined"){
               this.$router.push({name: "homePage"})
           }

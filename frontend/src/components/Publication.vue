@@ -150,9 +150,7 @@ export default {
       },
       async checkText (){
         const regex = /(?=.*[;{}$])|(?=.*<script>)/;
-        console.log(this.putPublication);
         const checkTxt = regex.test(this.putPublication);
-        console.log(checkTxt);
         if(checkTxt == true){
             this.checkPublication = "Le texte de votre publication ne doit pas commporter les caractères ';', '{', '}', '$' ou la chaine '<script>'."
         }else{
@@ -164,7 +162,6 @@ export default {
           const image = document.getElementById('image').files[0];
           formData.append("text", JSON.stringify(this.putPublication));
           formData.append("image", image);
-          console.log(image);
           const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id;
           const myHeader = new Headers({'Authorization': 'Basic ' + localStorage.getItem('token')});
           const request = new Request(
@@ -179,18 +176,15 @@ export default {
           const res  = await fetch(request);
           const data = await res.text();
           this.messageModif = data;
-          console.log(this.messageModif);
           localStorage.setItem('modif', false);
           this.$router.go();
       },
       async activeModif(){
-          console.log(localStorage.modif);
           if (localStorage.modif == "true"){
               localStorage.setItem('modif', false);
           }else if (localStorage.modif == "false"){
               localStorage.setItem('modif', true);
           }
-          console.log(localStorage.modif);
           this.$router.go();
       },
       async previewImage() {
@@ -207,7 +201,6 @@ export default {
           let r = confirm('Voulez-vous vraiment supprimer votre publication')
           if(r == true){
             const url = "http://localhost:3000/api/publications/" + this.userId + "/publication/" + this.$route.params.id;
-            console.log(url);
             const  myHeader = new Headers({'Authorization': 'Basic ' + localStorage.getItem('token')});
             const request = new Request(
                     url,
@@ -220,8 +213,8 @@ export default {
             fetch(request)
                 .then(res => res.json())
                 .then(res => console.log(res))
+                .then(() => this.$router.push({name: "homePage"}))
                 .catch(error => console.log(error));
-            await this.$router.push({name: "homePage"})
           }else{
               console.log('Publication pas supprimer')
           }
@@ -329,7 +322,6 @@ export default {
                         this.userLiked = false;
                     }
                 }
-                console.log(this.userLiked);
             })
             .catch(error=> console.log(error));
       },

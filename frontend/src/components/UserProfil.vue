@@ -100,8 +100,6 @@ export default {
       async verifInput(){
         let form = document.forms['profilForm'];
         let formLength = form.elements.length - 1;
-        console.log(form);
-        console.log(formLength);
         let errorMessage = [
             "Ce champ ne doit comporter que des lettres ou des tirets. Ex: Eric, Adeline...",
             "Ce champ ne doit comporter que des lettres. Ex: Griezmann, Pogba...",
@@ -154,7 +152,6 @@ export default {
           const image = document.getElementById('image').files[0];
           formData.append("user", JSON.stringify(this.userPut));
           formData.append("image", image);
-          console.log(image);
           const url = "http://localhost:3000/api/auth/" + localStorage.userId;
           const myHeader = new Headers({"Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
@@ -169,7 +166,6 @@ export default {
           const res  = await fetch(request);
           const data = await res.text();
           this.messageModif = data;
-          console.log(this.messageModif);
           this.$router.go();
       },
       async getUserData() {
@@ -209,7 +205,7 @@ export default {
             this.userDelete = data;
             this.$router.push({name: "login"})
           } else {
-              console.log('rien')
+              console.log('rien');
           }
       }
   }

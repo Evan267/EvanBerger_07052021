@@ -104,9 +104,7 @@ export default {
       },
       async checkText (){
         const regex = /(?=.*[;{}$])|(?=.*<script>)/;
-        console.log(this.postCreate);
         const checkTxt = regex.test(this.postCreate);
-        console.log(checkTxt)
         if(checkTxt == true){
             this.checkPublication = "Le texte de votre publication ne doit pas commporter les caractères ';', '{', '}', '$' ou la chaine '<script>'."
         }else if (this.imageData == ""){

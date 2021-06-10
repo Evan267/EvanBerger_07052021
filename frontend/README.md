@@ -3,7 +3,6 @@
 ## Project setup
 ```
 npm install
-npm install -D sass-loader node-sass
 ```
 
 ### Compiles and hot-reloads for development

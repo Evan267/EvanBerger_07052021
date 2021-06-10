@@ -5,9 +5,6 @@ module.exports  = (sequelize, Sequelize) => {
         text: {
             type: DataTypes.TEXT
         },
-        upperCommentId: {
-            type: DataTypes.INTEGER
-        }
     });
     return Comment;
 }

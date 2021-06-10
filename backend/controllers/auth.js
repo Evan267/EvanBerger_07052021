@@ -1,6 +1,10 @@
-const db = require('../models');
+const { Sequelize } = require("../models");
+const db = require("../models");
+const Op = Sequelize.Op;
 const User = db.users;
-const Op = db.Sequelize.Op;
+const Publication = db.publications;
+const Comment = db.comments;
+const Like = db.likes;
 const fs = require('fs');
 
 const bcrypt = require('bcrypt');
@@ -63,11 +67,12 @@ exports.logIn = (req, res, next) => {
 };
 
 exports.deleteUser = (req, res, next) => {
-    return User.findOne({ where: { id: req.params.userId }})
+    return User.findOne({ where: { id: req.params.userId }, include: ["publications", "commentsUser"]})
         .then(user => {
+            console.log(user);
             const filename = user.image.split('/images/users/')[1];
             fs.unlink(`images/users/${filename}`, () => {
-                user.destroy({ where: { id: req.params.userId }})
+                user.destroy()
                     .then(() => res.status(200).json({ message: 'Utilisateur supprimé !'}))
                     .catch(error => res.status(400).json({ error }));
             });

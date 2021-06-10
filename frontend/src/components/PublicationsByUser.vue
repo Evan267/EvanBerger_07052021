@@ -127,7 +127,6 @@ export default {
       },
       async getUserData() {
           const url = "http://localhost:3000/api/auth/" + localStorage.userId + "/" + this.$route.params.userId;
-          console.log(url);
           const myHeader = new Headers({'Content-Type': 'application/json',"Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -142,7 +141,6 @@ export default {
           const data = await res.json();
           this.userGet = data;
           this.imageData = this.userGet.user.image;
-          console.log(this.userGet);
       },
       async getUserPublications() {
           const url = "http://localhost:3000/api/publications/" + localStorage.userId + "/user/" + this.$route.params.userId;
