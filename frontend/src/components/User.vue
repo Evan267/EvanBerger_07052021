@@ -46,6 +46,7 @@ export default {
   methods: {
       async getUserData() {
           const url = "http://localhost:3000/api/auth/" + localStorage.userId + "/" + localStorage.userId;
+          console.log(url);
           const myHeader = new Headers({'Content-Type': 'application/json',"Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -58,6 +59,7 @@ export default {
           );
           fetch(request)
             .then(res => {
+                console.log(res.status);
                 if(res.status === 401){
                     this.$router.push({name: "login"})
                 }else{
