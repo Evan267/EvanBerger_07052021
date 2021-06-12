@@ -101,7 +101,7 @@ Construire un réseau social interne pour les employés de Groupomania sur le mo
  * Serveur Web Local: **XAMP**
   
 **Frontend:**
- * Framwework: **Vuejs**, **Vue CLI**
+ * Framework: **Vuejs**, **Vue CLI**
 
 
 ## Évaluation
@@ -109,7 +109,7 @@ Construire un réseau social interne pour les employés de Groupomania sur le mo
 
 
 ## Contact
-* [Email](mailto:evan.berger@outlook.com?subject=[GitHub]%20Source%20Han%20Sans)
+* [Email](mailto:evan.berger@outlook.com)
 
 
 
