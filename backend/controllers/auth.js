@@ -11,8 +11,6 @@ const bcrypt = require('bcrypt');
 const jwt =  require('jsonwebtoken');
 
 exports.signUp  = (req, res, next) => {
-    console.log(JSON.parse(req.body.user));
-    console.log(req.file);
     const userObject = JSON.parse(req.body.user);
     bcrypt.hash(userObject.password, 10)
         .then(hash => {
@@ -52,8 +50,6 @@ exports.logIn = (req, res, next) => {
                         return res.status(401).json({error: 'Mot de passe incorrect !'});
                     }
                     res.status(200).json({
-                        userId: user.id,
-                        isAdmin: user.isAdmin,
                         token: jwt.sign(
                             { userId: user.id },
                             'Vh73yPzc92eZ79JKYpQ8YFgC7TV0DQtW5VoorINDld8HhEk7zEty2mqnEsi8NoY9O',
@@ -67,9 +63,11 @@ exports.logIn = (req, res, next) => {
 };
 
 exports.deleteUser = (req, res, next) => {
-    return User.findOne({ where: { id: req.params.userId }, include: ["publications", "commentsUser"]})
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, 'Vh73yPzc92eZ79JKYpQ8YFgC7TV0DQtW5VoorINDld8HhEk7zEty2mqnEsi8NoY9O');
+    const userId = decodedToken.userId;
+    return User.findOne({ where: { id: userId }, include: ["publications", "commentsUser"]})
         .then(user => {
-            console.log(user);
             const filename = user.image.split('/images/users/')[1];
             fs.unlink(`images/users/${filename}`, () => {
                 user.destroy()
@@ -81,14 +79,24 @@ exports.deleteUser = (req, res, next) => {
 }
 
 exports.getUser = (req,res, next) => {
-    return User.findOne({attributes: ["birthdate", "email", "firstname", "lastname", "image"],where: { id: req.params.id }})
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, 'Vh73yPzc92eZ79JKYpQ8YFgC7TV0DQtW5VoorINDld8HhEk7zEty2mqnEsi8NoY9O');
+    const userId = decodedToken.userId;
+    return User.findOne({attributes: ["id", "birthdate", "email", "firstname", "lastname", "image", "isAdmin"],where: { id: userId }})
+        .then(user => res.status(200).json({user}))
+        .catch(error => res.status(400).json({ error }));
+}
+
+exports.getOtherUser = (req,res, next) => {
+    return User.findOne({attributes: ["id", "birthdate", "email", "firstname", "lastname", "image", "isAdmin"],where: { id: req.params.userId }})
         .then(user => res.status(200).json({user}))
         .catch(error => res.status(400).json({ error }));
 }
 
 exports.modifyUser = (req,res, next) => {
-    console.log(JSON.parse(req.body.user));
-    console.log(req.file);
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, 'Vh73yPzc92eZ79JKYpQ8YFgC7TV0DQtW5VoorINDld8HhEk7zEty2mqnEsi8NoY9O');
+    const userId = decodedToken.userId;
     const userObject = JSON.parse(req.body.user);
     let user = {};
     if (userObject.user.password === undefined){
@@ -99,8 +107,7 @@ exports.modifyUser = (req,res, next) => {
                 lastname: userObject.user.lastname,
                 birthdate: userObject.user.birthdate
             };
-            console.log(user);
-            User.update(user, { where: { id: req.params.userId }})
+            User.update(user, { where: { id: userId }})
                 .then(() => res.status(201).json({ message: "La publication a été modifiée"}))
                 .catch (error => res.status(400).json({error}));
         } else  {
@@ -111,12 +118,11 @@ exports.modifyUser = (req,res, next) => {
                 birthdate: userObject.user.birthdate,
                 image: `${req.protocol}://${req.get('host')}/images/users/${req.file.filename}`,
             }
-            console.log(user);
-            User.findOne({ where: { id: req.params.userId }})
+            User.findOne({ where: { id: userId }})
                 .then(userFind => {
                     const filename = userFind.image.split('/images/users/')[1];
                     fs.unlink(`images/users/${filename}`, () => {
-                        User.update(user, { where: { id: req.params.userId }})
+                        User.update(user, { where: { id: userId }})
                         .then(() => res.status(201).json({ message: "La publication a été modifiée"}))
                         .catch (error => res.status(400).json({error}));
                     })
@@ -133,8 +139,7 @@ exports.modifyUser = (req,res, next) => {
                         lastname: userObject.user.lastname,
                         birthdate: userObject.user.birthdate
                     }
-                    console.log(user);
-                    User.update(user, { where: { id: req.params.userId }})
+                    User.update(user, { where: { id: userId }})
                         .then(() => res.status(201).json({ message: "La publication a été modifiée"}))
                         .catch (error => res.status(400).json({error}));
                 } else  {
@@ -146,12 +151,11 @@ exports.modifyUser = (req,res, next) => {
                         birthdate: userObject.user.birthdate,
                         image: `${req.protocol}://${req.get('host')}/images/users/${req.file.filename}`
                     }
-                    console.log(user);
-                    User.findOne({ where: { id: req.params.userId }})
+                    User.findOne({ where: { id: userId }})
                         .then(userFind => {
                             const filename = userFind.image.split('/images/users/')[1];
                             fs.unlink(`images/users/${filename}`, () => {
-                                User.update(user, { where: { id: req.params.userId }})
+                                User.update(user, { where: { id: userId }})
                                 .then(() => res.status(201).json({ message: "La publication a été modifiée"}))
                                 .catch (error => res.status(400).json({error}));
                             })

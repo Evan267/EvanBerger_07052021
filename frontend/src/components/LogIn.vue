@@ -46,8 +46,6 @@ export default {
           const res  = await fetch(request);
           const data = await res.json();
           localStorage.setItem('token', data.token);
-          localStorage.setItem('userId', data.userId);
-          localStorage.setItem('isAdmin', data.isAdmin);
           if(localStorage.token !== "undefined"){
               this.$router.push({name: "homePage"})
           }else{

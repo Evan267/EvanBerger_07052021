@@ -15,4 +15,4 @@ Pour faire fonctionner le projet, vous devez installer les modules ci-dessous :
 
 ## Development server
 
-Démarrer `npm start` pour avoir accès au serveur de développement. Rendez-vous sur `http://localhost:3000/`. L'application va se recharger automatiquement si vous modifiez un fichier source.
+Démarrer `npm run start` pour avoir accès au serveur de développement. Rendez-vous sur `http://localhost:3000/`. L'application va se recharger automatiquement si vous modifiez un fichier source.

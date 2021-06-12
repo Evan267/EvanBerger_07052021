@@ -16,8 +16,9 @@ const authCtrl = require('../controllers/auth');
 
 router.post('/signup', multer, checkPassword, authCtrl.signUp);
 router.post('/login', logInLimiter, authCtrl.logIn);
-router.get('/:userId/:id', auth, authCtrl.getUser);
-router.put('/:userId', auth, multer, authCtrl.modifyUser);
-router.delete('/:userId', auth, authCtrl.deleteUser);
+router.get('/', auth, authCtrl.getUser);
+router.get('/:userId', auth, authCtrl.getOtherUser);
+router.put('/', auth, multer, authCtrl.modifyUser);
+router.delete('/', auth, authCtrl.deleteUser);
 
 module.exports = router;

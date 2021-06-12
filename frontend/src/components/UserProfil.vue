@@ -137,7 +137,7 @@ export default {
       },
       async verif(){
           const verifPassword = document.getElementById('passwordConfirmation').value;
-          if( verifPassword === this.userPut.user.password){
+          if(this.userPut.user.password == undefined || verifPassword === this.userPut.user.password){
             await this.putUserData();
           } else {
               this.error.passwordNotDiff = true;
@@ -152,7 +152,7 @@ export default {
           const image = document.getElementById('image').files[0];
           formData.append("user", JSON.stringify(this.userPut));
           formData.append("image", image);
-          const url = "http://localhost:3000/api/auth/" + localStorage.userId;
+          const url = "http://localhost:3000/api/auth/";
           const myHeader = new Headers({"Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -169,7 +169,7 @@ export default {
           this.$router.go();
       },
       async getUserData() {
-          const url = "http://localhost:3000/api/auth/" + localStorage.userId + "/" + localStorage.userId;
+          const url = "http://localhost:3000/api/auth/";
           const myHeader = new Headers({'Content-Type': 'application/json',"Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -189,7 +189,7 @@ export default {
           let r = confirm("Voulez-vous vraiment supprimer votre profil ?")
           if(r == true){
             console.log('suppression du compte');
-            const url = "http://localhost:3000/api/auth/" + localStorage.userId;
+            const url = "http://localhost:3000/api/auth/";
             const myHeader = new Headers({'Content-Type': 'application/json',"Authorization": "Basic " + localStorage.getItem("token")});
             const request = new Request(
                 url,

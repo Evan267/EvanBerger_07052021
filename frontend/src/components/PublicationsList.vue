@@ -52,13 +52,12 @@
 </template>
 
 <script>
-
+import { mapState } from 'vuex'
 
 export default {
   name: 'PublicationsList',
   data() {
       return {
-          userId: localStorage.userId,
           postCreate: "",
           dataCreate: {},
           dataGet: {},
@@ -73,6 +72,9 @@ export default {
   },
   beforeMount () {
       this.getPublications();
+  },
+  computed: {
+      ...mapState(["user"])
   },
   methods: {
       date(date){
@@ -114,7 +116,7 @@ export default {
         }
       },
       async Like(publicationId){
-          const url = "http://localhost:3000/api/publications/" + this.userId + "/" + publicationId + "/likes";
+          const url = "http://localhost:3000/api/publications/" + publicationId + "/likes";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -123,7 +125,6 @@ export default {
                   headers: myHeader,
                   mode: "cors",
                   cache: "default",
-                  body: JSON.stringify({user: this.userId})
               }
           );
           fetch(request)
@@ -135,7 +136,7 @@ export default {
           .catch(error => console.log(error));
       },
       async Dislike(publicationId){
-          const url = "http://localhost:3000/api/publications/" + this.userId + "/" + publicationId + "/likes";
+          const url = "http://localhost:3000/api/publications/" + publicationId + "/likes";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -169,7 +170,7 @@ export default {
           const image = document.getElementById('image').files[0];
           formData.append("text", JSON.stringify(this.postCreate));
           formData.append("image", image);
-          const url = "http://localhost:3000/api/publications/" + localStorage.userId + "/publication";
+          const url = "http://localhost:3000/api/publications/";
           const myHeader = new Headers({'Authorization': 'Basic ' + localStorage.getItem('token')});
           const request = new Request(
               url,
@@ -187,7 +188,7 @@ export default {
           this.$router.go();
       },
       async getPublications() {
-          const url = "http://localhost:3000/api/publications/" + localStorage.userId;
+          const url = "http://localhost:3000/api/publications/";
           const  myHeader = new Headers({'Content-Type': 'application/json', 'Authorization': 'Basic ' + localStorage.getItem('token')});
           const request = new Request(
               url,
@@ -206,14 +207,14 @@ export default {
                     this.userLiked.push(false);
                     this.likesLength[i] = this.dataGet.publication[i].likes.length;
                     for(let x = 0; x < this.dataGet.publication[i].likes.length; x++){
-                        if(this.dataGet.publication[i].likes[x].usersLiked == this.userId){
+                        if(this.dataGet.publication[i].likes[x].usersLiked == this.user){
                             this.userLiked[i] = true;
                         }
                     }
                 }
             })
             .catch(error=> console.log(error));
-          localStorage.modif = false;
+          this.$store.commit('modif', false);
       }
   }
 }

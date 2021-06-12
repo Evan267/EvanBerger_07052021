@@ -13,7 +13,7 @@
                         <time class="publication__user__date">{{ date(dataGet.createdAt) }}</time>
                     </div>
                 </router-link>
-                <div v-if="userId == publicationUser.id" class="publication__headerBtn">
+                <div v-if="user == publicationUser.id" class="publication__headerBtn">
                     <button class="publication__headerBtn__modify" v-on:click="activeModif()"><i class="fas fa-pencil-alt"></i> Modifier</button>
                     <button class="publication__headerBtn__delete" v-on:click="deletePublication()"><i class="fas fa-trash-alt"></i> Supprimer</button>
                 </div>
@@ -21,7 +21,7 @@
                     <button class="publication__headerBtn__delete" v-on:click="deletePublication()"><i class="fas fa-trash-alt"></i> Supprimer</button>
                 </div>
             </div>
-            <div v-if="modif == 'false'">
+            <div v-if="modif == false">
                 <p class="publication__text">{{ dataGet.text }} </p>
                 <img :src="dataGet.image" alt="GIF publié" class="publication__img">
                 <div class="publication__commentsAndLikes">
@@ -77,7 +77,7 @@
                         <p><span class="publication__comments__userFullname">{{ item.userComment.firstname }} {{ item.userComment.lastname }}</span> {{ item.text }} </p>
                         <p class="publication__comments__createdDate">{{ date(item.createdAt) }}</p>
                     </div>
-                    <button class="publication__comments__delete" v-if="item.userId == userId || isAdmin == 'true'" v-on:click="deleteComment(item.id)"><i class="fas fa-times"></i></button>
+                    <button class="publication__comments__delete" v-if="item.userId == user || isAdmin == 'true'" v-on:click="deleteComment(item.id)"><i class="fas fa-times"></i></button>
                 </li>
             </ul>
         </div>
@@ -86,12 +86,12 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'Publication',
   data() {
       return {
-          userId: localStorage.userId,
-          isAdmin: localStorage.isAdmin,
           publicationUser: {},
           publicationLikes:[],
           commentCreate: {},
@@ -102,7 +102,6 @@ export default {
           deleteMessage: {},
           countLikes:0,
           userLiked: false,
-          modif: localStorage.modif,
           imageData: '',
           putPublication: '',
           messageModif: "",
@@ -115,12 +114,125 @@ export default {
       fullname: function(){
           return this.publicationUser.firstname  + ' ' +  this.publicationUser.lastname;
       },
+      ...mapState(["user", "isAdmin", "modif"])
   },
   created () {
       this.getOnePublication();
       this.getAllComments();
   },
   methods: {
+      async getOnePublication() {
+          const url = "http://localhost:3000/api/publications/" + this.$route.params.id;
+          const  myHeader = new Headers({'Content-Type': 'application/json', 'Authorization': 'Basic ' + localStorage.getItem('token')});
+          const request = new Request(
+              url,
+              {
+                  method:  "GET",
+                  headers: myHeader,
+                  mode: "cors",
+              }
+          );
+          fetch(request)
+            .then(res => {
+                if(res.status === 401){
+                    this.$router.push({name: "login"});
+                    localStorage.clear();
+                }else{
+                    return res.json();
+                }
+            })
+            .then(data => this.dataGet = data.publication)
+            .then(() => {
+                this.publicationUser = this.dataGet.user;
+                this.publicationLikes = this.dataGet.likes;
+                this.imageData = this.dataGet.image;
+                this.putPublication = this.dataGet.text;
+            })
+            .then(() => {
+                this.countLikes = this.publicationLikes.length;
+                this.userLiked = false;
+                for (let i = 0; i < this.publicationLikes.length; i++){
+                    if(this.dataGet.likes[i].usersLiked == this.user){
+                        this.userLiked = true;
+                        
+                    }else{
+                        this.userLiked = false;
+                    }
+                }
+            })
+            .catch(error=> console.log(error));
+      },
+      async modifPublication(){
+          const formData = new FormData();
+          const image = document.getElementById('image').files[0];
+          formData.append("text", JSON.stringify(this.putPublication));
+          formData.append("image", image);
+          const url = "http://localhost:3000/api/publications/" + this.$route.params.id;
+          const myHeader = new Headers({'Authorization': 'Basic ' + localStorage.getItem('token')});
+          const request = new Request(
+              url,
+              {
+                  method:  "PUT",
+                  headers: myHeader,
+                  mode: "cors",
+                  body: formData
+              }
+          );
+          const res  = await fetch(request);
+          const data = await res.text();
+          this.messageModif = data;
+          this.$store.commit('modif', false);
+          this.$router.go();
+      },
+      async checkText (){
+        const regex = /(?=.*[;{}$])|(?=.*<script>)/;
+        const checkTxt = regex.test(this.putPublication);
+        if(checkTxt == true){
+            this.checkPublication = "Le texte de votre publication ne doit pas commporter les caractères ';', '{', '}', '$' ou la chaine '<script>'."
+        }else{
+            await this.modifPublication();
+        }
+      },
+      async activeModif(){
+          if (this.modif == true){
+              this.$store.commit('modif', false);
+          }else if (this.modif == false){
+              this.$store.commit('modif', true);
+          }
+          
+      },
+      async previewImage() {
+        var input = event.target;
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = (e) => {
+                this.imageData = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+      },
+      async deletePublication(){
+          let r = confirm('Voulez-vous vraiment supprimer votre publication')
+          if(r == true){
+            const url = "http://localhost:3000/api/publications/" + this.$route.params.id;
+            const  myHeader = new Headers({'Authorization': 'Basic ' + localStorage.getItem('token')});
+            const request = new Request(
+                    url,
+                    {
+                        method:  "DELETE",
+                        headers: myHeader,
+                        mode: "cors",
+                    }
+            );
+            fetch(request)
+                .then(res => res.json())
+                .then(res => console.log(res))
+                .then(() => this.$router.push({name: "homePage"}))
+                .catch(error => console.log(error));
+          }else{
+              console.log('Publication pas supprimer')
+          }
+      },
       date(date){
           let dateFormat = new Date(date);
           let dateParse = Number(dateFormat);
@@ -148,80 +260,8 @@ export default {
               return "1s";
             }
       },
-      async checkText (){
-        const regex = /(?=.*[;{}$])|(?=.*<script>)/;
-        const checkTxt = regex.test(this.putPublication);
-        if(checkTxt == true){
-            this.checkPublication = "Le texte de votre publication ne doit pas commporter les caractères ';', '{', '}', '$' ou la chaine '<script>'."
-        }else{
-            await this.modifPublication();
-        }
-      },
-      async modifPublication(){
-          const formData = new FormData();
-          const image = document.getElementById('image').files[0];
-          formData.append("text", JSON.stringify(this.putPublication));
-          formData.append("image", image);
-          const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id;
-          const myHeader = new Headers({'Authorization': 'Basic ' + localStorage.getItem('token')});
-          const request = new Request(
-              url,
-              {
-                  method:  "PUT",
-                  headers: myHeader,
-                  mode: "cors",
-                  body: formData
-              }
-          );
-          const res  = await fetch(request);
-          const data = await res.text();
-          this.messageModif = data;
-          localStorage.setItem('modif', false);
-          this.$router.go();
-      },
-      async activeModif(){
-          if (localStorage.modif == "true"){
-              localStorage.setItem('modif', false);
-          }else if (localStorage.modif == "false"){
-              localStorage.setItem('modif', true);
-          }
-          this.$router.go();
-      },
-      async previewImage() {
-        var input = event.target;
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = (e) => {
-                this.imageData = e.target.result;
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-      },
-      async deletePublication(){
-          let r = confirm('Voulez-vous vraiment supprimer votre publication')
-          if(r == true){
-            const url = "http://localhost:3000/api/publications/" + this.userId + "/publication/" + this.$route.params.id;
-            const  myHeader = new Headers({'Authorization': 'Basic ' + localStorage.getItem('token')});
-            const request = new Request(
-                    url,
-                    {
-                        method:  "DELETE",
-                        headers: myHeader,
-                        mode: "cors",
-                    }
-            );
-            fetch(request)
-                .then(res => res.json())
-                .then(res => console.log(res))
-                .then(() => this.$router.push({name: "homePage"}))
-                .catch(error => console.log(error));
-          }else{
-              console.log('Publication pas supprimer')
-          }
-      },
       async Like(){
-          let user = this.userId;
-          const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id + "/likes";
+          const url = "http://localhost:3000/api/publications/" + this.$route.params.id + "/likes";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -230,7 +270,6 @@ export default {
                   headers: myHeader,
                   mode: "cors",
                   cache: "default",
-                  body: JSON.stringify({userLike: user})
               }
           );
           fetch(request)
@@ -243,7 +282,7 @@ export default {
           .catch(error => console.log(error));
       },
       async Dislike(){
-          const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id + "/likes";
+          const url = "http://localhost:3000/api/publications/" + this.$route.params.id + "/likes";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -264,7 +303,7 @@ export default {
           .catch(error => console.log(error));
       },
       async createComment () {
-          const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id + "/comments";
+          const url = "http://localhost:3000/api/publications/" + this.$route.params.id + "/comments";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -285,48 +324,8 @@ export default {
           .then(() => this.dataCreate = "")
           .catch(error => console.log(error));
       },
-      async getOnePublication() {
-          const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id;
-          const  myHeader = new Headers({'Content-Type': 'application/json', 'Authorization': 'Basic ' + localStorage.getItem('token')});
-          const request = new Request(
-              url,
-              {
-                  method:  "GET",
-                  headers: myHeader,
-                  mode: "cors",
-              }
-          );
-          fetch(request)
-            .then(res => {
-                if(res.status === 401){
-                    this.$router.push({name: "login"});
-                }else{
-                    return res.json();
-                }
-            })
-            .then(data => this.dataGet = data.publication)
-            .then(() => {
-                this.publicationUser = this.dataGet.user;
-                this.publicationLikes = this.dataGet.likes;
-                this.imageData = this.dataGet.image;
-                this.putPublication = this.dataGet.text;
-            })
-            .then(() => {
-                this.countLikes = this.publicationLikes.length;
-                this.userLiked = false;
-                for (let i = 0; i < this.publicationLikes.length; i++){
-                    if(this.dataGet.likes[i].usersLiked == this.userId){
-                        this.userLiked = true;
-                        
-                    }else{
-                        this.userLiked = false;
-                    }
-                }
-            })
-            .catch(error=> console.log(error));
-      },
       async getAllComments() {
-          const url = "http://localhost:3000/api/publications/" + this.userId + "/" + this.$route.params.id + "/comments";
+          const url = "http://localhost:3000/api/publications/" + this.$route.params.id + "/comments";
           const  myHeader = new Headers({'Content-Type': 'application/json', 'Authorization': 'Basic ' + localStorage.getItem('token')});
           const request = new Request(
               url,
@@ -342,7 +341,7 @@ export default {
           this.commentLength = data.comments.length;
       },
       async deleteComment(id) {
-          const url = "http://localhost:3000/api/publications/" + this.userId + "/" + id + "/comments";
+          const url = "http://localhost:3000/api/publications/" + id + "/comments";
           const  myHeader = new Headers({'Content-Type': 'application/json', 'Authorization': 'Basic ' + localStorage.getItem('token')});
           const request = new Request(
                 url,

@@ -6,15 +6,17 @@ const Publication = db.publications;
 const Comment = db.comments;
 const Like = db.likes;
 const fs = require('fs');
+const jwt =  require('jsonwebtoken');
 
 exports.createPublication = (req, res, next) => {
-    console.log('réussi');
-    console.log(req.body.text);
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, 'Vh73yPzc92eZ79JKYpQ8YFgC7TV0DQtW5VoorINDld8HhEk7zEty2mqnEsi8NoY9O');
+    const userId = decodedToken.userId;
     const publicationObject = JSON.parse(req.body.text);
     let publication = {
         text: publicationObject,
         image: `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`,
-        userId: req.params.userId
+        userId: userId
     };
     Publication.create(publication)
         .then(() => res.status(201).json({ message: 'Nouvelle publication créée !' }))
@@ -22,18 +24,23 @@ exports.createPublication = (req, res, next) => {
 };
 
 exports.createComment = (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, 'Vh73yPzc92eZ79JKYpQ8YFgC7TV0DQtW5VoorINDld8HhEk7zEty2mqnEsi8NoY9O');
+    const userId = decodedToken.userId;
     return Comment.create({
         text: req.body.text,
-        upperCommentId: req.body.upperCommentId,
         publicationId: req.params.publicationId,
-        userId: req.params.userId
+        userId: userId
     })
         .then(() => res.status(201).json({ message: 'Nouveau commentaire créée !' }))
         .catch(error => res.status(400).json({ error }));
 }
 
 exports.likePublication = (req,res, next) => {
-    return Like.create({ publicationId: req.params.publicationId, usersLiked: req.params.userId })
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, 'Vh73yPzc92eZ79JKYpQ8YFgC7TV0DQtW5VoorINDld8HhEk7zEty2mqnEsi8NoY9O');
+    const userId = decodedToken.userId;
+    return Like.create({ publicationId: req.params.publicationId, usersLiked: userId })
         .then(() => res.status(201).json({message: 'Aime'}))
         .catch(error => res.status(400).json({error}));
 };
@@ -103,7 +110,10 @@ exports.deletePublication = (req, res, next) => {
 };
 
 exports.dislikePublication = (req,res, next) => {
-    return Like.destroy({ where: { publicationId: req.params.publicationId, usersLiked: req.params.userId }})
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, 'Vh73yPzc92eZ79JKYpQ8YFgC7TV0DQtW5VoorINDld8HhEk7zEty2mqnEsi8NoY9O');
+    const userId = decodedToken.userId;
+    return Like.destroy({ where: { publicationId: req.params.publicationId, usersLiked: userId }})
         .then(() => res.status(201).json({message: "N'aime plus"}))
         .catch(error => res.status(400).json({error}));
 };

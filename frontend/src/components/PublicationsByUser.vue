@@ -37,11 +37,12 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'PublicationsByUser',
   data() {
       return {
-          userId: localStorage.userId,
           postCreate: '',
           dataCreate: {},
           dataGet: {},
@@ -59,6 +60,9 @@ export default {
   beforeMount () {
       this.getUserData();
       this.getUserPublications();
+  },
+  computed: {
+      ...mapState(["user"])
   },
   methods: {
       date(date){
@@ -89,7 +93,7 @@ export default {
             }
       },
       async Like(publicationId){
-          const url = "http://localhost:3000/api/publications/" + this.userId + "/" + publicationId + "/likes";
+          const url = "http://localhost:3000/api/publications/" + publicationId + "/likes";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -98,7 +102,6 @@ export default {
                   headers: myHeader,
                   mode: "cors",
                   cache: "default",
-                  body: JSON.stringify({user: this.userId})
               }
           );
           fetch(request)
@@ -108,7 +111,7 @@ export default {
           await this.getUserPublications();
       },
       async Dislike(publicationId){
-          const url = "http://localhost:3000/api/publications/" + this.userId + "/" + publicationId + "/likes";
+          const url = "http://localhost:3000/api/publications/" + publicationId + "/likes";
           const  myHeader = new Headers({ "Content-Type": "application/json", "Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -126,7 +129,7 @@ export default {
           await this.getUserPublications();
       },
       async getUserData() {
-          const url = "http://localhost:3000/api/auth/" + localStorage.userId + "/" + this.$route.params.userId;
+          const url = "http://localhost:3000/api/auth/" + this.$route.params.userId;
           const myHeader = new Headers({'Content-Type': 'application/json',"Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -143,7 +146,7 @@ export default {
           this.imageData = this.userGet.user.image;
       },
       async getUserPublications() {
-          const url = "http://localhost:3000/api/publications/" + localStorage.userId + "/user/" + this.$route.params.userId;
+          const url = "http://localhost:3000/api/publications/user/" + this.$route.params.userId;
           const  myHeader = new Headers({'Content-Type': 'application/json', 'Authorization': 'Basic ' + localStorage.getItem('token')});
           const request = new Request(
               url,
@@ -161,14 +164,14 @@ export default {
                 for(let i = 0; i < this.dataGet.publication.length; i++){
                     this.userLiked.push(false);
                     for(let x = 0; x < this.dataGet.publication[i].likes.length; x++){
-                        if(this.dataGet.publication[i].likes[x].usersLiked == this.userId){
+                        if(this.dataGet.publication[i].likes[x].usersLiked == this.user){
                             this.userLiked[i] = true;
                         }
                     }
                 }
             })
             .catch(error=> console.log(error));
-          localStorage.modif = false;
+          this.$store.commit('modif', false);
       }
   }
 }

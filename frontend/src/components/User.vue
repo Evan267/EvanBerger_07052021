@@ -7,8 +7,8 @@
                     <h2 class="user__fullname">{{ fullname }}</h2>
                 </div>
                 <ul class="sous">
-                    <li><router-link :to="{ name: 'publications-by-user', params: { userId: userId }}" class="user__btn" >Vos publications</router-link></li>
-                    <li><router-link :to="{ name: 'user-profil', params: { userId: userId }}" class="user__btn">Votre Profil</router-link></li>
+                    <li><router-link :to="{ name: 'publications-by-user', params: { userId: user }}" class="user__btn" >Vos publications</router-link></li>
+                    <li><router-link :to="{ name: 'user-profil'}" class="user__btn">Votre Profil</router-link></li>
                     <li><router-link :to="{ name: 'homePage'}" class="user__btn">Fil d'actualités</router-link></li>
                 </ul>
             </div>
@@ -20,11 +20,12 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'User',
   data() {
       return {
-          userId: localStorage.userId,
           post: {},
           userGet: {
               user: {
@@ -38,15 +39,15 @@ export default {
   computed: {
       fullname: function(){
           return this.userGet.user.firstname  + ' ' +  this.userGet.user.lastname;
-      }
+      },
+      ...mapState(["user", "isAdmin"])
   },
   created (){
       this.getUserData();
   },
   methods: {
       async getUserData() {
-          const url = "http://localhost:3000/api/auth/" + localStorage.userId + "/" + localStorage.userId;
-          console.log(url);
+          const url = "http://localhost:3000/api/auth/";
           const myHeader = new Headers({'Content-Type': 'application/json',"Authorization": "Basic " + localStorage.getItem("token")});
           const request = new Request(
               url,
@@ -62,12 +63,17 @@ export default {
                 console.log(res.status);
                 if(res.status === 401){
                     this.$router.push({name: "login"})
+                    localStorage.clear();
                 }else{
                     return res.json()
                 }
             })
             .then(data => this.userGet = data)
-            .catch(error=> console.log(error))
+            .then(() => {
+                this.$store.commit('getUserId', this.userGet.user.id);
+                this.$store.commit('getAdmin', this.userGet.user.isAdmin);
+                })
+            .catch(error=> console.log(error));
       }
   }
 }

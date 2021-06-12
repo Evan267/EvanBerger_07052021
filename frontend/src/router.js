@@ -17,7 +17,7 @@ export default new Router({
           component: () => import("./components/PublicationsList")
         },
         {
-          path: "/profil/:userId",
+          path: "/profil",
           name: "user-profil",
           component: () => import("./components/UserProfil"),
         },
